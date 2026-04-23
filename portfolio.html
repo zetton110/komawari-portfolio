@@ -16,6 +16,7 @@
     --line:#161616;
     --idea:#5b8c3e;
     --tech:#b23a3a;
+    --book:#c9a800;
     --border:1.5px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -66,6 +67,15 @@
   .hero > div{padding:36px 32px}
   .hero-intro{
     border-right:var(--border) solid var(--ink);
+    position:relative;
+  }
+  .hero-icon{
+    position:absolute;
+    top:20px;right:20px;
+    width:52px;height:52px;
+    object-fit:cover;
+    border-radius:50%;
+    display:block;
   }
   .hero-intro h1{
     font-family:'Zen Kaku Gothic New',sans-serif;
@@ -143,6 +153,7 @@
   .latest-strip .cat-tag .dot{width:7px;height:7px;border-radius:50%}
   .latest-strip[data-cat="idea"] .cat-tag .dot{background:var(--idea)}
   .latest-strip[data-cat="tech"] .cat-tag .dot{background:var(--tech)}
+  .latest-strip[data-cat="book"] .cat-tag .dot{background:var(--book)}
   .latest-strip h4{
     font-weight:500;font-size:13.5px;line-height:1.5;
     color:var(--ink);
@@ -202,6 +213,7 @@
   .cat-btn .dot{width:8px;height:8px;border-radius:50%;background:var(--ink)}
   .cat-btn[data-k="idea"] .dot{background:var(--idea)}
   .cat-btn[data-k="tech"] .dot{background:var(--tech)}
+  .cat-btn[data-k="book"] .dot{background:var(--book)}
   .cat-btn .n{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
   .cat-btn.active{background:var(--ink);color:var(--paper)}
   .cat-btn.active .n{color:#aaa}
@@ -261,6 +273,7 @@
   .post .cat-tag .dot{width:7px;height:7px;border-radius:50%}
   .post[data-cat="idea"] .cat-tag .dot{background:var(--idea)}
   .post[data-cat="tech"] .cat-tag .dot{background:var(--tech)}
+  .post[data-cat="book"] .cat-tag .dot{background:var(--book)}
 
   .post h3{
     font-family:'Zen Kaku Gothic New',sans-serif;
@@ -332,7 +345,10 @@
     padding:18px;
     border-right:var(--border) solid var(--ink);
     display:flex;flex-direction:column;gap:12px;
+    cursor:pointer;
+    transition:background .12s;
   }
+  .work:hover{background:#f5f1e6}
   .work:last-child{border-right:none}
   .work .thumb{
     aspect-ratio: 4/3;
@@ -343,9 +359,28 @@
     font-family:'JetBrains Mono',monospace;
     font-size:10px;color:var(--muted);
     text-align:center;padding:10px;
+    position:relative;overflow:hidden;
+  }
+  .work .thumb img{
+    position:absolute;inset:0;
+    width:100%;height:100%;
+    object-fit:cover;
+    display:block;
   }
   .work h4{font-weight:700;font-size:14px;line-height:1.4}
   .work .meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);display:flex;justify-content:space-between}
+  /* Work modal */
+  .modal .m-work-meta{
+    font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);
+    margin-top:8px;display:flex;gap:16px;flex-wrap:wrap;
+  }
+  .modal .m-work-url{
+    display:inline-flex;align-items:center;gap:5px;
+    margin-top:16px;font-size:13px;font-weight:600;
+    border-bottom:1.5px solid var(--ink);padding-bottom:1px;
+    color:var(--ink);
+  }
+  .modal .m-work-url:hover{color:var(--ink-soft)}
 
   /* ===== Footer ===== */
   .foot-panel{
@@ -445,10 +480,45 @@
   .modal .m-cat .dot{width:7px;height:7px;border-radius:50%}
   .modal .m-cat[data-cat="idea"] .dot{background:var(--idea)}
   .modal .m-cat[data-cat="tech"] .dot{background:var(--tech)}
+  .modal .m-cat[data-cat="book"] .dot{background:var(--book)}
   .modal h2{font-weight:900;font-size:26px;line-height:1.35}
   .modal .m-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:10px;display:flex;gap:16px;flex-wrap:wrap}
+  .modal .m-img{
+    margin:20px 0 0;
+    border:var(--border) solid var(--ink);
+    overflow:hidden;
+    background:#f0ede5;
+  }
+  .modal .m-img img{
+    width:100%;
+    display:block;
+    max-height:400px;
+    object-fit:cover;
+  }
   .modal .m-body{margin-top:22px;font-size:14px;line-height:1.9;color:var(--ink-soft)}
   .modal .m-body p{margin-bottom:12px}
+  .modal .m-body h1,.modal .m-body h2,.modal .m-body h3,.modal .m-body h4{font-weight:700;margin:20px 0 8px;color:var(--ink)}
+  .modal .m-body h1{font-size:18px}.modal .m-body h2{font-size:16px}.modal .m-body h3{font-size:14px}
+  .modal .m-body ul,.modal .m-body ol{margin:0 0 12px 22px}
+  .modal .m-body li{margin-bottom:4px}
+  .modal .m-body code{font-family:'JetBrains Mono',monospace;font-size:12px;background:#f0ede5;padding:1px 5px}
+  .modal .m-body pre{background:#f0ede5;padding:14px;margin-bottom:12px;overflow-x:auto}
+  .modal .m-body pre code{background:none;padding:0}
+  .modal .m-body blockquote{border-left:3px solid var(--muted);padding-left:14px;color:var(--ink-soft);margin-bottom:12px}
+  .modal .m-body a{text-decoration:underline}
+  .modal .m-body strong{font-weight:700}
+  .modal .m-body em{font-style:italic}
+  .modal .m-body hr{border:none;border-top:1px solid #ddd;margin:16px 0}
+
+  /* ===== Post image badge ===== */
+  .post .img-badge{
+    font-family:'JetBrains Mono',monospace;
+    font-size:9px;letter-spacing:.06em;
+    color:var(--muted);
+    border:1px solid #ccc;
+    padding:1px 5px;
+    line-height:1.4;
+  }
 
   @media (max-width: 900px){
     .page{padding:28px 20px 60px}
@@ -573,6 +643,7 @@
 
 <div id="root"></div>
 
+<script src="https://unpkg.com/marked@9/marked.min.js"></script>
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
@@ -587,122 +658,57 @@ const POSTS = [
     date: "2026.04.18", read: "8 min",
     tags: ["design", "essay"],
     excerpt: "ウェブのレイアウトを一枚絵ではなく『漫画のページ』として捉え直すと何が起こるか。視線誘導・間・緩急の話。",
-    body: [
-      "漫画家はコマの大小と余白で読者の視線を誘導する。大ゴマでは時間が止まり、小ゴマの連続ではテンポが生まれる。これはウェブのヒーロー、カード、ナビゲーションにもそのまま応用できる考え方だ。",
-      "『全部を主役にすると、誰も主役にならない』——これは紙もスクリーンも同じで、強弱のない画面は読まれない。設計で最初に決めるべきは何を大ゴマにするか、だと思っている。",
-      "実務では、ワイヤー段階でグリッドを壊す勇気が要る。揃いすぎたレイアウトは読まれず、崩れすぎたレイアウトは疲れる。その間のちょうどいいリズムを掴む訓練として、私はよく漫画を模写している。"
-    ]
-  },
-  {
-    id: 2, cat: "tech", size: "s-tall",
-    title: "CSS Grid で不規則レイアウトを気持ちよく組む",
-    date: "2026.04.12", read: "6 min",
-    tags: ["css", "grid"],
-    excerpt: "grid-column: span と grid-auto-rows を使いこなすと、手組みっぽいのに安定したレイアウトになる。",
-    body: [
-      "このサイト自体がその実例。grid-template-columns を 6 分割にしておき、各カードに span 2/3/4 を振っていくだけで、崩れない手書き風レイアウトが手に入る。",
-      "ポイントは grid-auto-rows を固定にしておくこと。これで span を縦横に効かせても破綻しない。",
-      "JSで並び替えするときも、カード側の span 指定を維持すれば自動的にフィットしてくれる。"
-    ]
-  },
-  {
-    id: 3, cat: "idea", size: "s-wide",
-    title: "締め切りは創造の友である",
-    date: "2026.04.05", read: "4 min",    tags: ["mindset"],
-    excerpt: "余白があるほどいい仕事ができる、とは限らない。制約は思考の形を決める型だ。",
-    body: [
-      "無制限に時間を与えられて良い仕事が出てきた試しがない。むしろ『金曜までに3案』と切られた瞬間、何故か脳が動き出す。",
-      "締め切りは敵ではなく、判断を下すための最後の一押しをくれる存在。"
-    ]
-  },
-  {
-    id: 4, cat: "tech", size: "s-wide",
-    title: "useSyncExternalStore、どこで使う?",
-    date: "2026.03.28", read: "5 min",
-    tags: ["react"],
-    excerpt: "外部ストアとの同期。ユースケースを3つ。",
-    body: [
-      "React 18 で追加された useSyncExternalStore は、自前のストアや DOM API と React の描画を安全に同期させるためのフック。",
-      "よく使う場面は (1) localStorage との同期 (2) window.matchMedia の購読 (3) サードパーティストア連携。"
-    ]
-  },
-  {
-    id: 5, cat: "idea", size: "s-sq",
-    title: "散歩と、頭の中のインデックス",
-    date: "2026.03.20", read: "3 min",
-    tags: ["essay"],
-    excerpt: "歩いているとき、考えは並び替わる。座っているときはそれができない。",
-    body: [
-      "机の前ではいいアイデアが出ないのに、コンビニまでの5分で答えが出ることがある。身体を動かすと、記憶のインデックスが再構築される気がしている。"
-    ]
-  },
-  {
-    id: 6, cat: "tech", size: "s-sq",
-    title: "oklch() に乗り換えて3ヶ月",
-    date: "2026.03.14", read: "4 min",
-    tags: ["css", "color"],
-    excerpt: "色の明度を揃えたいときは oklch 一択になった。",
-    body: [
-      "hsl だとチャンネルをいじると知覚的な明度が揺れてしまう。oklch は L を固定して H だけ動かせば、同じ明るさのパレットが作れる。"
-    ]
-  },
-  {
-    id: 7, cat: "idea", size: "s-sq",
-    title: "読書メモは読んだ本の数だけ書かない",
-    date: "2026.03.08", read: "3 min",
-    tags: ["reading"],
-    excerpt: "全ての本にメモは要らない。響いた一冊に何日も滞在する。",
-    body: [
-      "多読より滞在。速読ブームが去って久しいが、いい本は3回読むくらいがちょうどいい。"
-    ]
-  },
-  {
-    id: 8, cat: "tech", size: "s-wide-lg",
-    title: "View Transitions API で画面遷移に『間』を作る",
-    date: "2026.02.28", read: "7 min",
-    tags: ["web", "animation"],
-    excerpt: "SPA の硬い遷移にひと呼吸入れる。ネイティブアプリっぽさの正体はここにある。",
-    body: [
-      "View Transitions API を使うと、DOM のスナップショットを取って前後を自動でクロスフェードしてくれる。たったそれだけで、画面のつながりが劇的に変わる。"
-    ]
-  },
-  {
-    id: 9, cat: "idea", size: "s-sq",
-    title: "Less, but better を日本語で考える",
-    date: "2026.02.20", read: "4 min",
-    tags: ["design"],
-    excerpt: "『少ないほうがいい』ではなく『引き算の方が、効く』。",
-    body: [
-      "ディーター・ラムスの言葉は、翻訳の仕方で意味がだいぶ変わる。"
-    ]
-  },
-  {
-    id:10, cat:"tech", size:"s-wide-lg",
-    title:"TypeScript 5.4 の NoInfer が気持ちいい",
-    date:"2026.02.14", read:"3 min",
-    tags:["typescript"],
-    excerpt:"ジェネリクスの型推論を部分的に止める一手。外側のジェネリクス推論を止めて、意図した型だけを受け付けるようにできる。",
-    body:["推論してほしいところと、してほしくないところが混在する場面で効く。"]
+    img: "./images/20260424_eye_catch.png",
+    body: "## なぜか漫画は無限に読める\nなんでどうして漫画というのはこうも読みやすいもんなのか。\n誰との予定も入れず、ただただやりすごすモノクロの日曜日。さすがになにかしなきゃ損かと街へ出かけてはみたものの、急に雨に降られ駆け込んだ見知らぬ古本屋。ゲリラ豪雨が去るまでの宿代のつもりで買った適当な小説に心の底から感動したのがことの始まり。親しい友人をつかまえて、すごい小説をみつけてさぁ・・・と出会いからなにからしっかり語り、前菜副菜もう十分となったもんだから「おまえもぜひ読んでくれ」とすすめたが最後、「いやぁ、どうも昔から活字は苦手でね...」といって逃げられる。そんな無情な人間が、なぜだか漫画を読んで涙を流し、「最終巻まで読んじゃって気づいたら朝だった」なんてまぁ後悔なんて綺麗に置き去りにしたにくい笑顔を向けてくるのはなぜなのか。漫画には人を狂わせる何かがあるらしい。\n## コマの大小と余白が生み出すリズム感\n漫画はなぜ、文学が通用しない人間をこうも惹きつけるのか。ここまでくると、漫画は根本的に他の読み物とは異なると考えるのがよさそうだ。そして考えた末に、漫画は他のよみものと**リズム**が異なると結論づけた。漫画家はコマの大小と余白で読者の視線を誘導する。大ゴマでは時間が止まり、小ゴマの連続では一定のテンポが生まれる。コマの大小と余白により生まれる停止と再生、その繰り返しと揺らぎが生み出すリズムこそ、漫画というフォーマットがもつ特性ではないか。\n## 漫画のように読めるポートフォリオを\nそんな考えで、このポートフォリオが生まれた。漫画のようなデザインだったらダラダラと読み進めてくれるんじゃないか、という仮説検証である。こと実務では、ワイヤー段階でグリッドを壊すには勇気が要る。揃いすぎたレイアウトは読まれず、崩れすぎたレイアウトは疲れる。踏み外す勇気のない私は、業務とは離れた自分の箱庭で試すしかないのである。"
   }
 ];
 
-const CAT_LABEL = { idea: "Idea", tech: "Tech", all: "All" };
+const CAT_LABEL = { idea: "Idea", tech: "Tech", book: "Book", all: "All" };
+const HERO_ICON = "";
+const FOOTER_LINKS = { twitter: "https://x.com/itohey_k", github: "https://github.com/zetton110" };
 
 const TIMELINE = {
   work: [
-    { ep: "01", year: "2018", month: "APR", page: "P.001", role: "Junior Designer", co: "株式会社コスモ・スタジオ", title: "はじまりの一歩、グラフィックから。", desc: "印刷物とウェブのアシスタント。Illustrator と InDesign の腕が上がった時期。", tags:["Print","Web","Adobe"], icon:"✎" },
-    { ep: "02", year: "2019", month: "OCT", page: "P.014", role: "UI Designer", co: "Nami Inc.", title: "アプリの画面を、はじめて任される。", desc: "読書ログアプリの UI を担当。初めての実装者との共同作業で、コードに近づく。", tags:["iOS","Figma"], icon:"◧" },
-    { ep: "03", year: "2021", month: "JUN", page: "P.033", role: "Product Designer", co: "Tsumiki", title: "デザインシステムを、ゼロから組む。", desc: "トークン設計・ドキュメント整備・React Native 実装までを通した3年間。", tags:["DesignSystem","Tokens","RN"], icon:"▦" },
-    { ep: "04", year: "2024", month: "FEB", page: "P.058", role: "Senior Product Designer", co: "Haiku Lab", title: "書くことの道具を、書く人として作る。", desc: "メモエディタのプロダクトリード。書き手の視点から機能を削る/足すを繰り返す。", tags:["Editor","Web","Lead"], icon:"☰" },
-    { ep: "05", year: "2025", month: "NOV", page: "P.082", role: "Design Lead", co: "komawari. (独立)", title: "自分の屋号で、もう一度。", desc: "独立して屋号「komawari.」を立ち上げる。現在はデザインシステム刷新案件を中心に活動。", tags:["Freelance","Consulting"], icon:"☄" }
+    {
+      ep: "01", year: "2014", month: "APR", page: "P.001",
+      role: "System Integrator", co: "Fujitsu Ltd.",
+      title: "はじまりの一歩、Slerとして生きる", desc: "だけん、打鍵はテストのことだけん。チームのものづくりとはなんたるかを知る。",
+      tags:["Web", ".Net", "C#"], icon:"✎"
+    },
+    {
+      ep: "02", year: "2019", month: "DEC", page: "P.014",
+      role: "FA Engineer", co: "Izumo Murata Manufacturing Co., Ltd.",
+      title: "工場内のシステムの開発・保守をチームリーダーとして牽引", desc: "システムが止まれば工場も止まる。システムの改善が工場の生産性に直結する。現場力をひたすら鍛えた。",
+      tags:[".Net", "VBNet", "Infra"], icon:"◧"
+    },
+    {
+      ep: "03", year: "2022", month: "ARP / WIP", page: "P.033",
+      role: "Software Developer", co: "Nulab Inc.",
+      title: "自分が大切に思う価値観をより多くの人届けるために、Webサービスの世界へ。", desc: "チームが好き。コラボレーションが好き。そんなシステムを開発できる環境で楽しく必死に学んでます。",
+      tags:["AWS", "Go", "Scala"], icon:"▦"
+    }
   ],
   edu: [
-    { ep: "番外01", year: "2014", month: "APR", page: "P.000", role: "Undergrad", co: "武蔵野美術大学 視覚伝達デザイン学科", title: "紙と画面のあいだを、行ったり来たり。", desc: "在学中はブックデザインと展示設計を中心に。卒業制作は「コマ割りの文法」。", tags:["Typography","Editorial"], icon:"✦" },
-    { ep: "番外02", year: "2023", month: "MAR", page: "P.050", role: "Workshop", co: "IAMAS 集中講座", title: "情報設計とナラティブ構造の再入門。", desc: "物語構造をデジタルプロダクトにどう適用するか、2週間の集中講座で集中的に考える。", tags:["Narrative","Research"], icon:"✦" }
+    {
+      ep: "番外01", year: "2014", month: "APR", page: "P.000",
+      role: "Undergrad", co: "Waseda University Faculty of Education",
+      title: "社会学と音楽に没頭する日々", desc: "社会学は抽象化の学問。あらゆる事象を分析し境界を見つける力はシステム開発の世界でも生きている。",
+      tags:["Sociology"], icon:"✦"
+    }
   ],
   side: [
-    { ep: "特別編01", year: "2022", page: "P.045", role: "Book", co: "自費出版", title: "『コマ割りグリッド』刊行(準備中)", desc: "ウェブレイアウトを漫画の文法で解説する本。現在執筆中、2026冬に刊行予定。", tags:["Writing","Self-publish"], icon:"❒", month:"WIP" },
-    { ep: "特別編02", year: "2023", page: "P.060", role: "Talk", co: "Designship 2023", title: "『余白の強度』というテーマで登壇。", desc: "余白は引き算ではなく、強度をもった造形である、という話を40分。", tags:["Speaking"], icon:"✿", month:"OCT" }
+    {
+      ep: "特別編01", year: "2024", month: "WIP", page: "P.045",
+      role: "Award", co: "AWS",
+      title: "2024 Japan AWS All Certifications Engineers", desc: "[2024 Japan AWS All Certifications Engineers の発表](https://aws.amazon.com/jp/blogs/psa/2024-japan-aws-all-certifications-engineers/)",
+      tags:["AWS"], icon:"❒"
+    },
+    {
+      ep: "特別編02", year: "2025", month: "APR", page: "P.060",
+      role: "Award", co: "AWS",
+      title: "2025 Japan All AWS Certifications Engineers", desc: "[2024 Japan AWS All Certifications Engineers の発表](https://aws.amazon.com/jp/blogs/psa/2025-japan-all-aws-certifications-engineers/)",
+      tags:["AWS"], icon:"✿"
+    }
   ]
 };
 
@@ -744,23 +750,22 @@ function Hero(){
   return (
     <section className="hero">
       <div className="hero-intro">
+        {HERO_ICON && <img className="hero-icon" src={HERO_ICON} alt="" />}
         <h1>
           <small>// INTRO</small>
           作るひと、書くひと。
         </h1>
         <p className="lede">
-          プロダクトデザイナーの S. のポートフォリオ。
-          ここは完成品の陳列棚ではなく、試作と思考を置く作業台のような場所です。
-          下のブログには Idea(考えたこと)と Tech(作ったこと)を分けて並べています。
+          エンジニアの koheito のポートフォリオ 兼 ちょっとしたブログサイト。完成品を並べるというよりは、試作と思考を置く作業台のような場所です。
         </p>
       </div>
       <div className="hero-now">
         <h4>// NOW</h4>
         <ul>
-          <li><span className="k">WORK</span><span>社内向けデザインシステムの刷新</span></li>
-          <li><span className="k">WRITE</span><span>コマ割りグリッドの本を書いている</span></li>
-          <li><span className="k">LIFE</span><span>犬と早朝の散歩、ほぼ毎日</span></li>
-          <li><span className="k">BASE</span><span>Tokyo / Remote</span></li>
+          <li><span className="k">WORK</span><span>Webサービスの開発・保守</span></li>
+          <li><span className="k">WRITE</span><span>IT、暮らし、小説、スト6のことを書いてる</span></li>
+          <li><span className="k">LIFE</span><span>子育て、ぶいすぽ</span></li>
+          <li><span className="k">BASE</span><span>Shimane / Remote</span></li>
         </ul>
       </div>
     </section>
@@ -771,7 +776,8 @@ function FilterBar({ cat, setCat, q, setQ, counts }){
   const cats = [
     { key:"all",  label:"All" },
     { key:"idea", label:"Idea" },
-    { key:"tech", label:"Tech" }
+    { key:"tech", label:"Tech" },
+    { key:"book", label:"Book" }
   ];
   return (
     <div className="filter-bar">
@@ -798,7 +804,10 @@ function Post({ p, onOpen, edgeR, edgeB }){
     <button className={cls.join(" ")} data-cat={p.cat} onClick={()=>onOpen(p)}>
       <div className="meta-top">
         <span className="cat-tag"><span className="dot"></span>{CAT_LABEL[p.cat]}</span>
-        <span>{p.date}</span>
+        <span style={{display:"flex",alignItems:"center",gap:"6px"}}>
+          {p.img && <span className="img-badge">photo</span>}
+          {p.date}
+        </span>
       </div>
       <h3>{p.title}</h3>
       <p className="excerpt">{p.excerpt}</p>
@@ -828,22 +837,63 @@ function BlogGrid({ posts, filtered, onOpen }){
   );
 }
 
-function Works(){
+function Works({ onOpen }){
   const items = [
-    { t:"Ledger — 家計簿アプリ",   y:"2025", k:"iOS" },
-    { t:"Tsumiki — デザインシステム",y:"2024", k:"Tokens" },
-    { t:"Haiku — メモエディタ",     y:"2024", k:"Web" },
-    { t:"Nami — 読書ログ",         y:"2023", k:"Mobile" }
+    { t:"komawari.", y:"2026", k:"portfolio", img:"./images/komawari.png", desc:"# komawari.\nポートフォリオ 兼　ブログサイト。漫画のコマ割りのような見た目のWebサイト。\n\n# 使用技術\n## ポートフォリオ本体\n- React 18\n- フォント：Zen Kaku Gothic New、JetBrains Mono（Google Fonts）\n- Node.js + Express 5\n- ws（WebSocket）— portfolio.html の変更を検知してブラウザに hot reload 通知" },
+    { t:"agsf", y:"2024", k:"cli", img:"./images/agsf_img.png", desc:"# agsf\nアニメ・ゲーム・特撮（SFX）に登場する楽曲・作品の情報を検索するCLIツール\n# 使用技術\nGo", url:"https://github.com/zetton110/agsfind" },
+    { t:"Loverage", y:"2019", k:"web service", img:"./images/49273095.png", desc:"# Loverage\n2択の恋愛相談サービス\n（現在はサービス閉鎖済み）\n\n# 使用技術\n## フロントエンド\n- Vue.js 2 — メインのUIフレームワーク\n- Nuxt.js 2 — SSR（サーバーサイドレンダリング）対応版で使用\n- Vuex — 状態管理（vuex-persistedstateでの永続化も実装）\n- Vue Router — クライアントサイドルーティング\n- Express — Node.jsサーバー（SSR時のサーバー兼用）\n- Axios — APIとのHTTP通信\n- SCSS（node-sass / sass-loader） — スタイリング\n- PWA対応（@nuxtjs/pwa / @vue/cli-plugin-pwa）\n- Google Analytics / Google AdSense / Google Tag Manager — アクセス解析・広告\n- Heroku — デプロイ先プラットフォーム（Procfileより）\n\n## バックエンド\n- Elixir — サーバーサイドプログラミング言語\n- Phoenix Framework 1.3 — Elixir製Webフレームワーク\n- PostgreSQL（Ecto + Postgrex） — データベース\n- bcrypt_elixir — パスワードハッシュ化\n- cors_plug — CORS対応\n- Cowboy — HTTPサーバー\n- Timex — 日時処理（日本時刻対応）\n- Heroku — デプロイ先（Procfileより）\n## 管理画面\n- Vue.js — フロントエンドフレームワーク（フロントと同技術）" }
   ];
   return (
     <div className="works">
       {items.map((it,i)=>(
-        <div className="work" key={i}>
-          <div className="thumb">[ thumbnail ]</div>
+        <div className="work" key={i} onClick={()=>onOpen(it)}>
+          <div className="thumb">
+            {it.img ? <img src={it.img} alt={it.t} /> : '[ thumbnail ]'}
+          </div>
           <h4>{it.t}</h4>
           <div className="meta"><span>{it.y}</span><span>{it.k}</span></div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function WorkModal({ work, onClose }){
+  useEffect(()=>{
+    if(!work) return;
+    const h = e => { if(e.key==="Escape") onClose(); };
+    window.addEventListener("keydown", h);
+    return ()=>window.removeEventListener("keydown", h);
+  },[work,onClose]);
+  if(!work) return null;
+  return (
+    <div className={"modal-bg open"} onClick={onClose}>
+      <div className="modal" onClick={e=>e.stopPropagation()}>
+        <button className="close" onClick={onClose}>✕</button>
+        <span className="m-cat" style={{color:'var(--muted)'}}>
+          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,letterSpacing:'.1em'}}>WORKS</span>
+        </span>
+        <h2 style={{marginTop:8}}>{work.t}</h2>
+        <div className="m-work-meta">
+          <span>{work.y}</span>
+          <span>{work.k}</span>
+        </div>
+        {work.img && (
+          <div className="m-img">
+            <img src={work.img} alt={work.t} />
+          </div>
+        )}
+        {work.desc && (
+          <div className="m-body" dangerouslySetInnerHTML={{__html:
+            marked.parse(work.desc)
+          }} />
+        )}
+        {work.url && (
+          <a className="m-work-url" href={work.url} target="_blank" rel="noopener noreferrer">
+            プロジェクトを見る →
+          </a>
+        )}
+      </div>
     </div>
   );
 }
@@ -911,9 +961,14 @@ function Modal({ post, onClose }){
           <span>{post.read}</span>
           <span>{post.tags.map(t=>"#"+t).join("  ")}</span>
         </div>
-        <div className="m-body">
-          {post.body.map((p,i)=><p key={i}>{p}</p>)}
-        </div>
+        {post.img && (
+          <div className="m-img">
+            <img src={post.img} alt={post.title} />
+          </div>
+        )}
+        <div className="m-body" dangerouslySetInnerHTML={{__html:
+          marked.parse(Array.isArray(post.body) ? post.body.join('\n\n') : (post.body||''))
+        }} />
       </div>
     </div>
   );
@@ -923,12 +978,14 @@ function App(){
   const [cat, setCat] = useState("all");
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(null);
+  const [openWork, setOpenWork] = useState(null);
   const [current, setCurrent] = useState("Home");
 
   const counts = useMemo(()=>({
     all: POSTS.length,
     idea: POSTS.filter(p=>p.cat==="idea").length,
     tech: POSTS.filter(p=>p.cat==="tech").length,
+    book: POSTS.filter(p=>p.cat==="book").length,
   }),[]);
 
   const filtered = useMemo(()=>{
@@ -974,7 +1031,7 @@ function App(){
         <h2><span className="sub">CH.02</span>Works</h2>
         <div className="count">04</div>
       </div>
-      <Works />
+      <Works onOpen={setOpenWork} />
 
       <div id="sec-timeline" className="section-head" style={{marginTop:64}}>
         <h2><span className="sub">CH.03</span>Timeline</h2>
@@ -984,15 +1041,14 @@ function App(){
 
       <footer id="sec-contact" className="foot-panel">
         <div className="links">
-          <a href="#">Twitter/X</a>
-          <a href="#">GitHub</a>
-          <a href="#">Mail</a>
-          <a href="#">RSS</a>
+          <a href={FOOTER_LINKS.twitter||"#"} target={FOOTER_LINKS.twitter?"_blank":undefined} rel="noopener noreferrer">Twitter/X</a>
+          <a href={FOOTER_LINKS.github||"#"} target={FOOTER_LINKS.github?"_blank":undefined} rel="noopener noreferrer">GitHub</a>
         </div>
         <div className="copy">© 2026 komawari.</div>
       </footer>
 
       <Modal post={open} onClose={()=>setOpen(null)} />
+      <WorkModal work={openWork} onClose={()=>setOpenWork(null)} />
     </div>
   );
 }

@@ -1,0 +1,1104 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Portfolio Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #fafaf7;
+  --ink: #161616;
+  --ink-soft: #555;
+  --muted: #8a8a88;
+  --idea: #5b8c3e;
+  --tech: #b23a3a;
+  --book: #c9a800;
+  --border: 1.5px solid #161616;
+  --radius: 0;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: var(--paper); color: var(--ink); font-family: 'Zen Kaku Gothic New', sans-serif; font-size: 14px; -webkit-font-smoothing: antialiased; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+input, textarea, select { font-family: inherit; font-size: 14px; color: var(--ink); background: var(--paper); border: var(--border); padding: 7px 10px; width: 100%; outline: none; border-radius: 0; }
+input:focus, textarea:focus, select:focus { outline: 2px solid var(--ink); outline-offset: -2px; }
+textarea { resize: vertical; }
+label { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .1em; color: var(--muted); display: block; margin-bottom: 5px; }
+a { color: inherit; text-decoration: none; }
+
+/* ── Layout ── */
+.shell { display: flex; flex-direction: column; height: 100vh; }
+
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 28px; height: 52px; flex-shrink: 0;
+  border-bottom: var(--border);
+  background: var(--paper);
+}
+.topbar-brand {
+  font-weight: 900; font-size: 15px; letter-spacing: .03em;
+  display: flex; align-items: baseline; gap: 10px;
+}
+.topbar-brand .tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--muted); font-weight: 400; letter-spacing: .15em;
+}
+.tabs { display: flex; gap: 0; }
+.tab {
+  padding: 0 20px; height: 52px; display: flex; align-items: center;
+  font-size: 13px; font-weight: 500; color: var(--muted);
+  border-left: var(--border);
+  transition: color .1s, background .1s;
+  cursor: pointer;
+}
+.tab:first-child { border-left: var(--border); }
+.tab:hover { color: var(--ink); background: #f3efe4; }
+.tab.active { color: var(--ink); background: var(--ink); color: var(--paper); }
+.topbar-link { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); border: var(--border); padding: 5px 12px; }
+.topbar-link:hover { background: #f3efe4; color: var(--ink); }
+
+.content { flex: 1; overflow-y: auto; padding: 36px 40px 80px; }
+
+/* ── Section header ── */
+.sec-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 24px; padding-bottom: 16px; border-bottom: var(--border); }
+.sec-head h2 { font-weight: 900; font-size: 20px; }
+.sec-head h2 small { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 500; color: var(--muted); letter-spacing: .15em; margin-right: 10px; }
+
+/* ── Buttons ── */
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; font-size: 13px; font-weight: 500; border: var(--border); cursor: pointer; transition: background .1s, color .1s; white-space: nowrap; }
+.btn:hover { background: #f0ede5; }
+.btn-primary { background: var(--ink); color: var(--paper); }
+.btn-primary:hover { background: #333; }
+.btn-danger { color: var(--tech); border-color: var(--tech); }
+.btn-danger:hover { background: #fdf0f0; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+
+/* ── Table ── */
+.tbl { width: 100%; border: var(--border); border-collapse: collapse; }
+.tbl th { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .12em; color: var(--muted); padding: 10px 14px; text-align: left; border-bottom: var(--border); background: #f5f1e6; }
+.tbl td { padding: 12px 14px; border-bottom: 1px solid #e8e4da; vertical-align: middle; }
+.tbl tr:last-child td { border-bottom: none; }
+.tbl tr:hover td { background: #f9f6ef; }
+.tbl .actions { display: flex; gap: 6px; justify-content: flex-end; }
+/* ── Drag & Drop ── */
+.drag-handle { cursor: grab; color: var(--muted); font-size: 15px; line-height: 1; user-select: none; padding: 2px 6px; display: inline-block; }
+.drag-handle:hover { color: var(--ink); }
+.drag-handle:active { cursor: grabbing; }
+.tbl tr.dnd-dragging td { opacity: .35; background: #f5f1e6 !important; }
+.tbl tr.dnd-over td { border-top: 2.5px solid var(--ink); }
+
+/* ── Cat badge ── */
+.badge { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .06em; padding: 2px 7px; border: 1px solid; display: inline-block; }
+.badge-idea { color: var(--idea); border-color: var(--idea); }
+.badge-tech { color: var(--tech); border-color: var(--tech); }
+.badge-book { color: var(--book); border-color: var(--book); }
+
+/* ── Form grid ── */
+.form-grid { display: grid; gap: 18px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.form-group { display: flex; flex-direction: column; min-width: 0; }
+.form-group label { margin-bottom: 5px; }
+.radio-group { display: flex; gap: 16px; align-items: center; padding: 8px 0; }
+.radio-group label { font-family: 'Zen Kaku Gothic New', sans-serif; font-size: 14px; letter-spacing: 0; color: var(--ink); margin: 0; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.radio-group input[type=radio] { width: auto; }
+
+/* ── Image upload ── */
+.img-area { border: var(--border); border-style: dashed; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.img-preview { max-height: 200px; width: 100%; object-fit: cover; border: var(--border); display: block; }
+.img-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.img-filename { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
+
+/* ── Modal ── */
+.overlay { position: fixed; inset: 0; background: rgba(22,22,22,.45); display: flex; align-items: flex-start; justify-content: center; z-index: 100; padding: 40px 20px; overflow-y: auto; }
+.modal { background: var(--paper); border: var(--border); width: 100%; max-width: 680px; padding: 36px 40px; position: relative; margin: auto; }
+.modal-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 28px; }
+.modal-head h3 { font-weight: 900; font-size: 18px; }
+.modal-close { font-size: 18px; color: var(--muted); line-height: 1; padding: 4px 6px; }
+.modal-close:hover { color: var(--ink); }
+.modal-foot { display: flex; justify-content: flex-end; gap: 10px; margin-top: 28px; padding-top: 20px; border-top: var(--border); }
+
+/* ── Confirm dialog ── */
+.confirm { background: var(--paper); border: var(--border); padding: 28px 32px; max-width: 360px; margin: auto; width: 100%; }
+.confirm p { margin-bottom: 20px; line-height: 1.7; }
+.confirm .actions { display: flex; justify-content: flex-end; gap: 10px; }
+
+/* ── Toast ── */
+.toast-wrap { position: fixed; bottom: 28px; right: 28px; display: flex; flex-direction: column; gap: 8px; z-index: 200; }
+.toast { background: var(--ink); color: var(--paper); font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 10px 18px; max-width: 320px; animation: fadeIn .2s ease; }
+.toast.error { background: var(--tech); }
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+
+/* ── Top form ── */
+.now-table { width: 100%; border: var(--border); border-collapse: collapse; }
+.now-table td { padding: 10px 14px; border-bottom: 1px solid #e8e4da; }
+.now-table tr:last-child td { border-bottom: none; }
+.now-table .key { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .1em; color: var(--muted); width: 80px; }
+.now-table input { border: none; border-bottom: 1px solid #ddd; padding: 4px 0; }
+.now-table input:focus { outline: none; border-bottom-color: var(--ink); }
+
+/* ── Markdown preview ── */
+.md-preview { border: var(--border); padding: 12px 14px; min-height: 160px; font-size: 14px; line-height: 1.85; color: var(--ink-soft); background: #fafaf7; overflow-x: hidden; word-break: break-word; overflow-wrap: break-word; }
+.md-preview p { margin-bottom: 10px; }
+.md-preview h1,.md-preview h2,.md-preview h3 { font-weight: 700; margin: 16px 0 6px; color: var(--ink); }
+.md-preview h1 { font-size: 17px; } .md-preview h2 { font-size: 15px; } .md-preview h3 { font-size: 14px; }
+.md-preview ul,.md-preview ol { margin: 0 0 10px 20px; }
+.md-preview li { margin-bottom: 3px; }
+.md-preview code { font-family: 'JetBrains Mono',monospace; font-size: 12px; background: #f0ede5; padding: 1px 5px; }
+.md-preview pre { background: #f0ede5; padding: 12px; margin-bottom: 10px; overflow-x: auto; }
+.md-preview pre code { background: none; padding: 0; }
+.md-preview blockquote { border-left: 3px solid var(--muted); padding-left: 12px; color: var(--muted); margin-bottom: 10px; }
+.md-preview strong { font-weight: 700; }
+.md-preview em { font-style: italic; }
+.md-tab-bar { display: flex; gap: 0; margin-bottom: 6px; }
+.md-tab { padding: 4px 14px; font-family: 'JetBrains Mono',monospace; font-size: 11px; letter-spacing: .08em; border: var(--border); cursor: pointer; background: transparent; color: var(--muted); margin-right: -1.5px; }
+.md-tab.active { background: var(--ink); color: var(--paper); }
+
+/* ── Empty ── */
+.empty { padding: 60px 30px; text-align: center; border: var(--border); color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/marked@9/marked.min.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ─── API ────────────────────────────────────────────────────────────────────
+const api = {
+  get:    url        => fetch(url).then(r => r.json()),
+  post:   (url, d)   => fetch(url, { method:'POST',   headers:{'Content-Type':'application/json'}, body:JSON.stringify(d) }).then(r => r.json()),
+  put:    (url, d)   => fetch(url, { method:'PUT',    headers:{'Content-Type':'application/json'}, body:JSON.stringify(d) }).then(r => r.json()),
+  patch:  (url, d)   => fetch(url, { method:'PATCH',  headers:{'Content-Type':'application/json'}, body:JSON.stringify(d) }).then(r => r.json()),
+  del:    url        => fetch(url, { method:'DELETE' }).then(r => r.json()),
+  upload: file       => { const f = new FormData(); f.append('image', file); return fetch('/api/upload', { method:'POST', body:f }).then(r => r.json()); },
+};
+
+const SIZES = ['s-hero','s-tall','s-wide','s-wide-lg','s-sq','s-sm'];
+const toPortfolioDate = d => d.replace(/-/g, '.');
+const toInputDate     = d => d ? d.replace(/\./g, '-') : '';
+
+// ─── useDragReorder ──────────────────────────────────────────────────────────
+function useDragReorder(items, onReorder) {
+  const dragIdx = useRef(null);
+  const [overIdx, setOverIdx] = useState(null);
+
+  const handleDragStart = useCallback((e, i) => {
+    dragIdx.current = i;
+    e.dataTransfer.effectAllowed = 'move';
+  }, []);
+
+  const handleDragOver = useCallback((e, i) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (overIdx !== i) setOverIdx(i);
+  }, [overIdx]);
+
+  const handleDrop = useCallback((e, i) => {
+    e.preventDefault();
+    const from = dragIdx.current;
+    dragIdx.current = null;
+    setOverIdx(null);
+    if (from === null || from === i) return;
+    const next = [...items];
+    const [moved] = next.splice(from, 1);
+    next.splice(i, 0, moved);
+    onReorder(next);
+  }, [items, onReorder]);
+
+  const handleDragEnd = useCallback(() => {
+    dragIdx.current = null;
+    setOverIdx(null);
+  }, []);
+
+  const rowProps = useCallback((i) => ({
+    draggable: true,
+    onDragStart: e => handleDragStart(e, i),
+    onDragOver:  e => handleDragOver(e, i),
+    onDrop:      e => handleDrop(e, i),
+    onDragEnd:   handleDragEnd,
+    className: [
+      dragIdx.current === i ? 'dnd-dragging' : '',
+      overIdx === i         ? 'dnd-over'     : '',
+    ].filter(Boolean).join(' ') || undefined,
+  }), [handleDragStart, handleDragOver, handleDrop, handleDragEnd, overIdx]);
+
+  return { rowProps };
+}
+
+// ─── Toast ──────────────────────────────────────────────────────────────────
+function useToast() {
+  const [toasts, setToasts] = useState([]);
+  const push = useCallback((msg, type = 'ok') => {
+    const id = Date.now();
+    setToasts(t => [...t, { id, msg, type }]);
+    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3000);
+  }, []);
+  const ToastContainer = () => (
+    <div className="toast-wrap">
+      {toasts.map(t => <div key={t.id} className={`toast${t.type==='error'?' error':''}`}>{t.msg}</div>)}
+    </div>
+  );
+  return { push, ToastContainer };
+}
+
+// ─── ImageInput ─────────────────────────────────────────────────────────────
+function ImageInput({ value, onChange }) {
+  // value = current img path (e.g. './images/foo.jpg') or ''
+  // onChange(newPath | '') – newPath is either kept path or pending upload file
+  const [file, setFile] = useState(null);   // File object pending upload
+  const [preview, setPreview] = useState(null);
+  const fileRef = useRef();
+
+  const currentSrc = value && !file ? value.replace('./images/', '/images/') : null;
+
+  function handleSelect(e) {
+    const f = e.target.files[0];
+    if (!f) return;
+    setFile(f);
+    setPreview(URL.createObjectURL(f));
+    onChange({ type: 'file', file: f });
+  }
+  function handleRemove() {
+    setFile(null);
+    setPreview(null);
+    if (fileRef.current) fileRef.current.value = '';
+    onChange({ type: 'remove' });
+  }
+
+  // 保存成功後に親から key を変えてリマウントされた場合に備えたリセット
+  // （ブラウザは同一ファイルの再選択で change イベントを発火しないため）
+  React.useEffect(() => {
+    setFile(null);
+    setPreview(null);
+    if (fileRef.current) fileRef.current.value = '';
+  }, []);
+
+  return (
+    <div className="img-area">
+      {(preview || currentSrc) && (
+        <img className="img-preview" src={preview || currentSrc} alt="" />
+      )}
+      {value && !file && (
+        <div className="img-filename">{value}</div>
+      )}
+      {file && (
+        <div className="img-filename">{file.name} <span style={{color:'var(--idea)'}}>（未保存）</span></div>
+      )}
+      <div className="img-actions">
+        <label className="btn btn-sm" style={{cursor:'pointer'}}>
+          {value || file ? '画像を変更' : '画像を選択'}
+          <input ref={fileRef} type="file" accept=".jpg,.jpeg,.png,.webp,.gif,.svg" style={{display:'none'}} onChange={handleSelect} />
+        </label>
+        {(value || file) && (
+          <button className="btn btn-sm btn-danger" onClick={handleRemove}>削除</button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── useCloseGuard ────────────────────────────────────────────────────────────
+// isDirty が true のとき、閉じる前に確認を求める
+function useCloseGuard(isDirty, onClose) {
+  const close = useCallback(() => {
+    if (isDirty && !window.confirm('編集中の内容が失われます。閉じてもよいですか？')) return;
+    onClose();
+  }, [isDirty, onClose]);
+
+  // Escape キーで閉じる
+  useEffect(() => {
+    const handler = e => { if (e.key === 'Escape') close(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [close]);
+
+  return close;
+}
+
+// ─── PostModal ───────────────────────────────────────────────────────────────
+function PostModal({ post, onClose, onSaved, toast }) {
+  const isNew = !post;
+  const initial = {
+    cat:     post?.cat     || 'idea',
+    size:    post?.size    || 's-sq',
+    title:   post?.title   || '',
+    date:    toInputDate(post?.date || ''),
+    read:    post?.read    || '3 min',
+    tags:    (post?.tags   || []).join(', '),
+    excerpt: post?.excerpt || '',
+    body:    Array.isArray(post?.body) ? post.body.join('\n\n') : (post?.body || ''),
+    img:     post?.img     || '',
+  };
+  const [form, setForm] = useState(initial);
+  const [imgChange, setImgChange] = useState(null);
+  const [bodyMode, setBodyMode]   = useState('edit');
+  const [saving, setSaving] = useState(false);
+
+  const isDirty = JSON.stringify(form) !== JSON.stringify(initial) || imgChange !== null;
+  const guardedClose = useCloseGuard(isDirty, onClose);
+
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  async function handleSave() {
+    if (!form.title.trim()) { toast('タイトルを入力してください', 'error'); return; }
+    setSaving(true);
+    try {
+      let img = form.img;
+      if (imgChange?.type === 'remove') { img = ''; }
+      else if (imgChange?.type === 'file') {
+        const res = await api.upload(imgChange.file);
+        if (res.error) throw new Error(res.error);
+        img = res.path;
+      }
+
+      const payload = {
+        cat:     form.cat,
+        size:    form.size,
+        title:   form.title.trim(),
+        date:    toPortfolioDate(form.date) || new Date().toISOString().slice(0,10).replace(/-/g,'.'),
+        read:    form.read,
+        tags:    form.tags.split(',').map(t => t.trim()).filter(Boolean),
+        excerpt: form.excerpt.trim(),
+        body:    form.body,
+        ...(img ? { img } : {}),
+      };
+
+      if (isNew) {
+        await api.post('/api/posts', payload);
+        toast('記事を追加しました');
+      } else {
+        await api.put(`/api/posts/${post.id}`, payload);
+        toast('記事を更新しました');
+      }
+      onSaved();
+    } catch(e) {
+      toast(e.message, 'error');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="overlay">
+      <div className="modal">
+        <div className="modal-head">
+          <h3>{isNew ? '// 新規記事' : `// 記事を編集 (ID: ${post.id})`}</h3>
+          <button className="modal-close" onClick={guardedClose}>✕</button>
+        </div>
+
+        <div className="form-grid">
+          <div className="form-group">
+            <label>TITLE *</label>
+            <input value={form.title} onChange={e => set('title', e.target.value)} placeholder="記事タイトル" />
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>CATEGORY</label>
+              <div className="radio-group">
+                {['idea','tech','book'].map(c => (
+                  <label key={c}>
+                    <input type="radio" name="cat" value={c} checked={form.cat===c} onChange={() => set('cat', c)} />
+                    <span className={`badge badge-${c}`}>{c}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="form-group">
+              <label>SIZE</label>
+              <select value={form.size} onChange={e => set('size', e.target.value)}>
+                {SIZES.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>DATE</label>
+              <input type="date" value={form.date} onChange={e => set('date', e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label>READ TIME</label>
+              <input value={form.read} onChange={e => set('read', e.target.value)} placeholder="3 min" />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>TAGS（カンマ区切り）</label>
+            <input value={form.tags} onChange={e => set('tags', e.target.value)} placeholder="design, essay" />
+          </div>
+
+          <div className="form-group">
+            <label>EXCERPT</label>
+            <textarea rows={2} value={form.excerpt} onChange={e => set('excerpt', e.target.value)} placeholder="記事の概要" />
+          </div>
+
+          <div className="form-group">
+            <label>IMAGE</label>
+            <ImageInput
+              value={form.img}
+              onChange={ch => setImgChange(ch)}
+            />
+          </div>
+
+          <div className="form-group">
+            <label>BODY（Markdown）</label>
+            <div className="md-tab-bar">
+              <button className={`md-tab${bodyMode==='edit'?' active':''}`} onClick={()=>setBodyMode('edit')}>編集</button>
+              <button className={`md-tab${bodyMode==='preview'?' active':''}`} onClick={()=>setBodyMode('preview')}>プレビュー</button>
+            </div>
+            {bodyMode === 'edit'
+              ? <textarea rows={10} value={form.body} onChange={e => set('body', e.target.value)}
+                  style={{fontFamily:"'JetBrains Mono',monospace",fontSize:13,lineHeight:1.7}}
+                  placeholder={"# 見出し\n\n本文テキスト。**太字** *斜体* `コード`\n\n- リスト\n- アイテム"} />
+              : <div className="md-preview" dangerouslySetInnerHTML={{__html: marked.parse(form.body||'')}} />
+            }
+          </div>
+        </div>
+
+        <div className="modal-foot">
+          <button className="btn" onClick={guardedClose}>キャンセル</button>
+          <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+            {saving ? '保存中...' : (isNew ? '追加' : '更新')}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── WorkModal ───────────────────────────────────────────────────────────────
+function WorkModal({ work, index, onClose, onSaved, toast }) {
+  const isNew = !work;
+  const initial = { t: work?.t||'', y: work?.y||String(new Date().getFullYear()), k: work?.k||'', img: work?.img||'', desc: work?.desc||'', url: work?.url||'' };
+  const [form, setForm] = useState(initial);
+  const [imgChange, setImgChange] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  const isDirty = JSON.stringify(form) !== JSON.stringify(initial) || imgChange !== null;
+  const guardedClose = useCloseGuard(isDirty, onClose);
+
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  async function handleSave() {
+    if (!form.t.trim()) { toast('プロジェクト名を入力してください', 'error'); return; }
+    setSaving(true);
+    try {
+      let img = form.img;
+      if (imgChange?.type === 'remove')      { img = ''; }
+      else if (imgChange?.type === 'file')   {
+        const res = await api.upload(imgChange.file);
+        if (res.error) throw new Error(res.error);
+        img = res.path;
+      }
+      const payload = { t: form.t, y: form.y, k: form.k, ...(img ? { img } : {}), ...(form.desc ? { desc: form.desc } : {}), ...(form.url ? { url: form.url } : {}) };
+      if (isNew) { await api.post('/api/works', payload); toast('Workを追加しました'); }
+      else        { await api.put(`/api/works/${index}`, payload); toast('Workを更新しました'); }
+      onSaved();
+    } catch(e) { toast(e.message, 'error'); }
+    finally { setSaving(false); }
+  }
+
+  return (
+    <div className="overlay">
+      <div className="modal" style={{maxWidth:500}}>
+        <div className="modal-head">
+          <h3>{isNew ? '// 新規Work' : '// Workを編集'}</h3>
+          <button className="modal-close" onClick={guardedClose}>✕</button>
+        </div>
+        <div className="form-grid">
+          <div className="form-group"><label>PROJECT NAME *</label><input value={form.t} onChange={e=>set('t',e.target.value)} placeholder="Ledger — 家計簿アプリ" /></div>
+          <div className="form-row">
+            <div className="form-group"><label>YEAR</label><input value={form.y} onChange={e=>set('y',e.target.value)} placeholder="2025" /></div>
+            <div className="form-group"><label>KEYWORD</label><input value={form.k} onChange={e=>set('k',e.target.value)} placeholder="iOS" /></div>
+          </div>
+          <div className="form-group">
+            <label>THUMBNAIL</label>
+            <ImageInput value={form.img} onChange={ch => setImgChange(ch)} />
+          </div>
+          <div className="form-group">
+            <label>DESCRIPTION（Markdown）</label>
+            <div className="md-tab-bar">
+              <button className={`md-tab${form._bodyMode!=='preview'?' active':''}`} onClick={()=>set('_bodyMode','edit')}>編集</button>
+              <button className={`md-tab${form._bodyMode==='preview'?' active':''}`} onClick={()=>set('_bodyMode','preview')}>プレビュー</button>
+            </div>
+            {form._bodyMode === 'preview'
+              ? <div className="md-preview" dangerouslySetInnerHTML={{__html: marked.parse(form.desc||'')}} />
+              : <textarea rows={8} value={form.desc} onChange={e=>set('desc',e.target.value)}
+                  style={{fontFamily:"'JetBrains Mono',monospace",fontSize:13,lineHeight:1.7}}
+                  placeholder={"プロジェクトの概要、使用技術、背景などを記述...\n\n## 概要\n\n## 技術スタック"} />
+            }
+          </div>
+          <div className="form-group">
+            <label>URL（外部リンク）</label>
+            <input value={form.url} onChange={e=>set('url',e.target.value)} placeholder="https://example.com" />
+          </div>
+        </div>
+        <div className="modal-foot">
+          <button className="btn" onClick={guardedClose}>キャンセル</button>
+          <button className="btn btn-primary" onClick={handleSave} disabled={saving}>{saving?'保存中...':(isNew?'追加':'更新')}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Confirm ─────────────────────────────────────────────────────────────────
+function Confirm({ message, onOk, onCancel }) {
+  return (
+    <div className="overlay" onClick={e=>e.target===e.currentTarget&&onCancel()}>
+      <div className="confirm">
+        <p>{message}</p>
+        <div className="actions">
+          <button className="btn" onClick={onCancel}>キャンセル</button>
+          <button className="btn btn-danger" onClick={onOk}>削除する</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── BlogSection ─────────────────────────────────────────────────────────────
+function BlogSection({ toast }) {
+  const [posts, setPosts] = useState(null);
+  const [modal, setModal] = useState(null); // null | 'new' | post object
+  const [confirm, setConfirm] = useState(null); // null | post id
+
+  const load = () => api.get('/api/posts').then(setPosts);
+  useEffect(() => { load(); }, []);
+
+  async function handleDelete(id) {
+    try {
+      await api.del(`/api/posts/${id}`);
+      toast('記事を削除しました');
+      load();
+    } catch(e) { toast(e.message, 'error'); }
+    setConfirm(null);
+  }
+
+  const handleReorder = useCallback(async (newPosts) => {
+    setPosts(newPosts);
+    try {
+      await api.patch('/api/posts/order', { ids: newPosts.map(p => p.id) });
+      toast('並び順を保存しました');
+    } catch(e) { toast(e.message, 'error'); load(); }
+  }, []);
+
+  const { rowProps } = useDragReorder(posts || [], handleReorder);
+
+  return (
+    <div>
+      <div className="sec-head">
+        <h2><small>CH.01</small>Blog</h2>
+        <button className="btn btn-primary" onClick={() => setModal('new')}>+ 新規記事</button>
+      </div>
+
+      {posts === null ? (
+        <div className="empty">読み込み中...</div>
+      ) : posts.length === 0 ? (
+        <div className="empty">記事がありません</div>
+      ) : (
+        <table className="tbl">
+          <thead>
+            <tr>
+              <th style={{width:32}}></th><th>ID</th><th>CAT</th><th>DATE</th><th>SIZE</th><th>TITLE</th><th>IMG</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {posts.map((p, i) => (
+              <tr key={p.id} {...rowProps(i)}>
+                <td style={{padding:'0 4px 0 10px'}}><span className="drag-handle" title="ドラッグで並び替え">⠿</span></td>
+                <td style={{fontFamily:'JetBrains Mono',fontSize:11,color:'var(--muted)'}}>{String(p.id).padStart(3,'0')}</td>
+                <td><span className={`badge badge-${p.cat}`}>{p.cat}</span></td>
+                <td style={{fontFamily:'JetBrains Mono',fontSize:11,color:'var(--muted)',whiteSpace:'nowrap'}}>{p.date}</td>
+                <td style={{fontFamily:'JetBrains Mono',fontSize:11,color:'var(--muted)'}}>{p.size}</td>
+                <td style={{maxWidth:280,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.title}</td>
+                <td style={{fontFamily:'JetBrains Mono',fontSize:10,color:p.img?'var(--idea)':'var(--muted)'}}>{p.img?'photo':'—'}</td>
+                <td>
+                  <div className="actions">
+                    <button className="btn btn-sm" onClick={() => setModal(p)}>編集</button>
+                    <button className="btn btn-sm btn-danger" onClick={() => setConfirm(p.id)}>削除</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      {modal && (
+        <PostModal
+          post={modal === 'new' ? null : modal}
+          onClose={() => setModal(null)}
+          onSaved={() => { setModal(null); load(); }}
+          toast={toast}
+        />
+      )}
+      {confirm !== null && (
+        <Confirm
+          message={`ID ${confirm} の記事を削除しますか？`}
+          onOk={() => handleDelete(confirm)}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── WorksSection ────────────────────────────────────────────────────────────
+function WorksSection({ toast }) {
+  const [works, setWorks] = useState(null);
+  const [modal, setModal] = useState(null); // null | 'new' | {work, index}
+  const [confirm, setConfirm] = useState(null);
+
+  const load = () => api.get('/api/works').then(setWorks);
+  useEffect(() => { load(); }, []);
+
+  async function handleDelete(index) {
+    try {
+      await api.del(`/api/works/${index}`);
+      toast('Workを削除しました');
+      load();
+    } catch(e) { toast(e.message, 'error'); }
+    setConfirm(null);
+  }
+
+  const handleReorder = useCallback(async (newWorks) => {
+    setWorks(newWorks);
+    try {
+      await api.patch('/api/works/order', newWorks);
+      toast('並び順を保存しました');
+    } catch(e) { toast(e.message, 'error'); load(); }
+  }, []);
+
+  const { rowProps } = useDragReorder(works || [], handleReorder);
+
+  return (
+    <div>
+      <div className="sec-head">
+        <h2><small>CH.02</small>Works</h2>
+        <button className="btn btn-primary" onClick={() => setModal('new')}>+ 新規Work</button>
+      </div>
+
+      {works === null ? (
+        <div className="empty">読み込み中...</div>
+      ) : works.length === 0 ? (
+        <div className="empty">Workがありません</div>
+      ) : (
+        <table className="tbl">
+          <thead><tr><th style={{width:32}}></th><th>#</th><th>THUMB</th><th>PROJECT NAME</th><th>YEAR</th><th>KEYWORD</th><th></th></tr></thead>
+          <tbody>
+            {works.map((w, i) => (
+              <tr key={i} {...rowProps(i)}>
+                <td style={{padding:'0 4px 0 10px'}}><span className="drag-handle" title="ドラッグで並び替え">⠿</span></td>
+                <td style={{fontFamily:'JetBrains Mono',fontSize:11,color:'var(--muted)'}}>{i+1}</td>
+                <td style={{width:56,padding:'6px 10px'}}>
+                  {w.img
+                    ? <img src={w.img.replace('./images/','/images/')} alt="" style={{width:48,height:36,objectFit:'cover',border:'1px solid #ddd',display:'block'}} />
+                    : <span style={{fontFamily:'JetBrains Mono',fontSize:10,color:'var(--muted)'}}>—</span>}
+                </td>
+                <td style={{fontWeight:700}}>{w.t}</td>
+                <td style={{fontFamily:'JetBrains Mono',fontSize:11,color:'var(--muted)'}}>{w.y}</td>
+                <td style={{fontFamily:'JetBrains Mono',fontSize:11}}>{w.k}</td>
+                <td>
+                  <div className="actions">
+                    <button className="btn btn-sm" onClick={() => setModal({work:w, index:i+1})}>編集</button>
+                    <button className="btn btn-sm btn-danger" onClick={() => setConfirm(i+1)}>削除</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      {modal && (
+        <WorkModal
+          work={modal === 'new' ? null : modal.work}
+          index={modal === 'new' ? null : modal.index}
+          onClose={() => setModal(null)}
+          onSaved={() => { setModal(null); load(); }}
+          toast={toast}
+        />
+      )}
+      {confirm !== null && (
+        <Confirm
+          message={`Work ${confirm} を削除しますか？`}
+          onOk={() => handleDelete(confirm)}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── TimelineModal ───────────────────────────────────────────────────────────
+const TL_GROUP_LABEL = { work: '本編 — Work', edu: '番外編 — Education', side: '特別編 — Side' };
+
+function TimelineModal({ item, group, index, onClose, onSaved, toast }) {
+  const isNew = !item;
+  const initial = {
+    ep:    item?.ep    || '',
+    year:  item?.year  || String(new Date().getFullYear()),
+    month: item?.month || '',
+    page:  item?.page  || '',
+    role:  item?.role  || '',
+    co:    item?.co    || '',
+    title: item?.title || '',
+    desc:  item?.desc  || '',
+    tags:  (item?.tags || []).join(', '),
+    icon:  item?.icon  || '✎',
+  };
+  const [form, setForm] = useState(initial);
+  const [saving, setSaving] = useState(false);
+
+  const isDirty = JSON.stringify(form) !== JSON.stringify(initial);
+  const guardedClose = useCloseGuard(isDirty, onClose);
+
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  async function handleSave() {
+    if (!form.title.trim()) { toast('タイトルを入力してください', 'error'); return; }
+    setSaving(true);
+    try {
+      const payload = { ...form, tags: form.tags.split(',').map(t => t.trim()).filter(Boolean) };
+      if (isNew) {
+        await api.post(`/api/timeline/${group}`, payload);
+        toast('エントリーを追加しました');
+      } else {
+        await api.put(`/api/timeline/${group}/${index}`, payload);
+        toast('エントリーを更新しました');
+      }
+      onSaved();
+    } catch(e) { toast(e.message, 'error'); }
+    finally { setSaving(false); }
+  }
+
+  return (
+    <div className="overlay">
+      <div className="modal">
+        <div className="modal-head">
+          <h3>{isNew ? `// 追加 — ${TL_GROUP_LABEL[group]}` : '// エントリーを編集'}</h3>
+          <button className="modal-close" onClick={guardedClose}>✕</button>
+        </div>
+        <div className="form-grid">
+          <div className="form-row">
+            <div className="form-group">
+              <label>EP（エピソード番号）</label>
+              <input value={form.ep} onChange={e=>set('ep',e.target.value)} placeholder="01 / 番外01 / 特別編01" />
+            </div>
+            <div className="form-group">
+              <label>ICON</label>
+              <input value={form.icon} onChange={e=>set('icon',e.target.value)} placeholder="✎" />
+            </div>
+          </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label>YEAR</label>
+              <input value={form.year} onChange={e=>set('year',e.target.value)} placeholder="2018" />
+            </div>
+            <div className="form-group">
+              <label>MONTH</label>
+              <input value={form.month} onChange={e=>set('month',e.target.value)} placeholder="APR / WIP" />
+            </div>
+          </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label>PAGE</label>
+              <input value={form.page} onChange={e=>set('page',e.target.value)} placeholder="P.001" />
+            </div>
+            <div className="form-group">
+              <label>ROLE</label>
+              <input value={form.role} onChange={e=>set('role',e.target.value)} placeholder="Junior Designer" />
+            </div>
+          </div>
+          <div className="form-group">
+            <label>COMPANY / ORGANIZATION</label>
+            <input value={form.co} onChange={e=>set('co',e.target.value)} placeholder="株式会社..." />
+          </div>
+          <div className="form-group">
+            <label>TITLE *</label>
+            <input value={form.title} onChange={e=>set('title',e.target.value)} placeholder="タイトル" />
+          </div>
+          <div className="form-group">
+            <label>DESCRIPTION</label>
+            <textarea rows={3} value={form.desc} onChange={e=>set('desc',e.target.value)} placeholder="詳細説明" />
+          </div>
+          <div className="form-group">
+            <label>TAGS（カンマ区切り）</label>
+            <input value={form.tags} onChange={e=>set('tags',e.target.value)} placeholder="Print, Web, Adobe" />
+          </div>
+        </div>
+        <div className="modal-foot">
+          <button className="btn" onClick={guardedClose}>キャンセル</button>
+          <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+            {saving ? '保存中...' : (isNew ? '追加' : '更新')}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── TimelineSection ─────────────────────────────────────────────────────────
+function TimelineSection({ toast }) {
+  const [data, setData]           = useState(null);
+  const [group, setGroup]         = useState('work');
+  const [modal, setModal]         = useState(null);
+  const [confirm, setConfirm]     = useState(null);
+
+  const load = () => api.get('/api/timeline').then(setData);
+  useEffect(() => { load(); }, []);
+
+  async function handleDelete(g, index) {
+    try {
+      await api.del(`/api/timeline/${g}/${index}`);
+      toast('エントリーを削除しました');
+      load();
+    } catch(e) { toast(e.message, 'error'); }
+    setConfirm(null);
+  }
+
+  const GROUPS = [
+    { key: 'work', label: '本編 — Work' },
+    { key: 'edu',  label: '番外編 — Education' },
+    { key: 'side', label: '特別編 — Side' },
+  ];
+  const items = data ? (data[group] || []) : [];
+
+  return (
+    <div>
+      <div className="sec-head">
+        <h2><small>CH.03</small>Timeline</h2>
+        <button className="btn btn-primary" onClick={() => setModal({ mode:'new', group })}>+ 追加</button>
+      </div>
+
+      {/* グループ切り替えタブ */}
+      <div style={{display:'flex',marginBottom:24,borderBottom:'1.5px solid var(--ink)'}}>
+        {GROUPS.map(g => (
+          <button key={g.key} onClick={() => setGroup(g.key)} style={{
+            padding:'8px 18px', border:'none', background: group===g.key ? 'var(--ink)' : 'transparent',
+            color: group===g.key ? 'var(--paper)' : 'var(--muted)',
+            fontFamily:"'JetBrains Mono',monospace", fontSize:11, letterSpacing:'.08em',
+            borderRight:'1.5px solid var(--ink)', cursor:'pointer',
+          }}>
+            {g.label}
+          </button>
+        ))}
+      </div>
+
+      {data === null ? (
+        <div className="empty">読み込み中...</div>
+      ) : items.length === 0 ? (
+        <div className="empty">エントリーがありません</div>
+      ) : (
+        <table className="tbl">
+          <thead>
+            <tr>
+              <th>EP</th><th>YEAR</th><th>MONTH</th><th>PAGE</th>
+              <th>ROLE</th><th>COMPANY</th><th>TITLE</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((item, i) => (
+              <tr key={i}>
+                <td style={{fontFamily:'JetBrains Mono',fontSize:11,color:'var(--muted)',whiteSpace:'nowrap'}}>{item.ep}</td>
+                <td style={{fontFamily:'JetBrains Mono',fontSize:11,color:'var(--muted)'}}>{item.year}</td>
+                <td style={{fontFamily:'JetBrains Mono',fontSize:11,color:'var(--muted)'}}>{item.month}</td>
+                <td style={{fontFamily:'JetBrains Mono',fontSize:10,color:'var(--muted)'}}>{item.page}</td>
+                <td style={{fontFamily:'JetBrains Mono',fontSize:11,whiteSpace:'nowrap'}}>{item.role}</td>
+                <td style={{maxWidth:160,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',fontSize:13}}>{item.co}</td>
+                <td style={{maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',fontWeight:600}}>{item.title}</td>
+                <td>
+                  <div className="actions">
+                    <button className="btn btn-sm" onClick={() => setModal({ mode:'edit', item, group, index: i+1 })}>編集</button>
+                    <button className="btn btn-sm btn-danger" onClick={() => setConfirm({ group, index: i+1 })}>削除</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      {modal && (
+        <TimelineModal
+          item={modal.mode === 'new' ? null : modal.item}
+          group={modal.group}
+          index={modal.index}
+          onClose={() => setModal(null)}
+          onSaved={() => { setModal(null); load(); }}
+          toast={toast}
+        />
+      )}
+      {confirm && (
+        <Confirm
+          message={`このエントリーを削除しますか？（${TL_GROUP_LABEL[confirm.group]} / ${confirm.index}番目）`}
+          onOk={() => handleDelete(confirm.group, confirm.index)}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── TopSection ──────────────────────────────────────────────────────────────
+function TopSection({ toast }) {
+  const [data, setData]             = useState(null);
+  const [links, setLinks]           = useState(null);
+  const [iconChange, setIconChange] = useState(null);
+  const [saving, setSaving]         = useState(false);
+  const [saveCount, setSaveCount]   = useState(0);
+
+  useEffect(() => {
+    api.get('/api/top').then(setData);
+    api.get('/api/footer').then(setLinks);
+  }, []);
+
+  function setTitle(v) { setData(d => ({ ...d, title: v })); }
+  function setLede(v)  { setData(d => ({ ...d, lede:  v })); }
+  function setNow(key, v) {
+    setData(d => ({ ...d, nowItems: d.nowItems.map(it => it.key === key ? { ...it, value: v } : it) }));
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      let icon = data.icon;
+      if (iconChange?.type === 'remove')    { icon = ''; }
+      else if (iconChange?.type === 'file') {
+        const res = await api.upload(iconChange.file);
+        if (res.error) throw new Error(res.error);
+        icon = res.path;
+      }
+      const putRes = await api.put('/api/top', { ...data, icon });
+      if (putRes.error) throw new Error('保存失敗: ' + putRes.error);
+      if (links) {
+        const linkRes = await api.put('/api/footer', links);
+        if (linkRes.error) throw new Error('リンク保存失敗: ' + linkRes.error);
+      }
+      setData(d => ({ ...d, icon }));
+      setIconChange(null);
+      setSaveCount(n => n + 1);
+      toast('Topページを更新しました');
+    } catch(e) { toast(e.message, 'error'); }
+    finally { setSaving(false); }
+  }
+
+  if (!data || !links) return <div className="empty">読み込み中...</div>;
+
+  return (
+    <div>
+      <div className="sec-head">
+        <h2><small>CH.00</small>Top</h2>
+        <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+          {saving ? '保存中...' : '変更を保存'}
+        </button>
+      </div>
+
+      <div className="form-grid" style={{maxWidth:640}}>
+        <div className="form-group">
+          <label>INTRO ICON（右上に表示）</label>
+          <div style={{display:'flex',gap:20,alignItems:'flex-start'}}>
+            <div style={{flex:1}}>
+              <ImageInput key={saveCount} value={data.icon} onChange={ch => setIconChange(ch)} />
+            </div>
+            {(data.icon || iconChange?.type === 'file') && (
+              <div style={{flexShrink:0}}>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:'var(--muted)',marginBottom:6}}>PREVIEW</div>
+                <img
+                  src={iconChange?.type==='file' ? URL.createObjectURL(iconChange.file) : data.icon.replace('./images/','/images/')}
+                  alt=""
+                  style={{width:96,height:96,objectFit:'cover',borderRadius:'50%',display:'block'}}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label>MAIN TITLE</label>
+          <input value={data.title} onChange={e => setTitle(e.target.value)} />
+        </div>
+
+        <div className="form-group">
+          <label>LEDE（紹介文）</label>
+          <textarea rows={4} value={data.lede} onChange={e => setLede(e.target.value)} />
+        </div>
+
+        <div className="form-group">
+          <label>FOOTER LINKS</label>
+          <table className="now-table">
+            <tbody>
+              <tr>
+                <td className="key">Twitter/X</td>
+                <td><input value={links.twitter} onChange={e => setLinks(l => ({ ...l, twitter: e.target.value }))} placeholder="https://x.com/yourhandle" /></td>
+              </tr>
+              <tr>
+                <td className="key">GitHub</td>
+                <td><input value={links.github} onChange={e => setLinks(l => ({ ...l, github: e.target.value }))} placeholder="https://github.com/yourhandle" /></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div className="form-group">
+          <label>NOW ITEMS</label>
+          <table className="now-table">
+            <tbody>
+              {data.nowItems.map(item => (
+                <tr key={item.key}>
+                  <td className="key">{item.key}</td>
+                  <td><input value={item.value} onChange={e => setNow(item.key, e.target.value)} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── App ─────────────────────────────────────────────────────────────────────
+function App() {
+  const [tab, setTab] = useState('blog');
+  const { push: toast, ToastContainer } = useToast();
+
+  return (
+    <div className="shell">
+      <header className="topbar">
+        <div className="topbar-brand">
+          komawari. <span className="tag">// admin</span>
+        </div>
+        <div className="tabs">
+          {[['top','Top'],['blog','Blog'],['works','Works'],['timeline','Timeline']].map(([key,label]) => (
+            <div key={key} className={`tab${tab===key?' active':''}`} onClick={() => setTab(key)}>{label}</div>
+          ))}
+        </div>
+        <a className="topbar-link" href="/" target="_blank">← Portfolio を開く</a>
+      </header>
+
+      <main className="content">
+        {tab === 'top'      && <TopSection      toast={toast} />}
+        {tab === 'blog'     && <BlogSection     toast={toast} />}
+        {tab === 'works'    && <WorksSection    toast={toast} />}
+        {tab === 'timeline' && <TimelineSection toast={toast} />}
+      </main>
+
+      <ToastContainer />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
