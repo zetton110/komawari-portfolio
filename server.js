@@ -27,7 +27,7 @@ try {
 
 const PORT       = parseInt(process.env.PORT || '3000', 10);
 const ROOT       = __dirname;
-const HTML_FILE  = path.join(ROOT, 'portfolio.html');
+const HTML_FILE  = path.join(ROOT, 'index.html');
 const ADMIN_FILE = path.join(ROOT, 'admin.html');
 const IMAGES_DIR = path.join(ROOT, 'images');
 

@@ -2,7 +2,7 @@
 'use strict';
 
 /**
- * portfolio-cli.js — portfolio.html のコンテンツ管理CLI
+ * portfolio-cli.js — index.html のコンテンツ管理CLI
  *
  * 使い方:
  *   node portfolio-cli.js                  インタラクティブメニュー
@@ -31,7 +31,7 @@ const IMG_MIME = {
   '.webp':'image/webp', '.svg':  'image/svg+xml',
 };
 
-const HTML_FILE = path.resolve(__dirname, 'portfolio.html');
+const HTML_FILE = path.resolve(__dirname, 'index.html');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ターミナルカラー
@@ -57,7 +57,7 @@ function hr(char = '─', width = 62) {
 
 function banner() {
   console.log('');
-  console.log(col.bold('  portfolio-cli') + col.dim(' // portfolio.html manager'));
+  console.log(col.bold('  portfolio-cli') + col.dim(' // index.html manager'));
   console.log(hr());
 }
 
@@ -198,7 +198,7 @@ function readHTML() {
 function writeHTML(html) {
   fs.writeFileSync(HTML_FILE + '.bak', fs.readFileSync(HTML_FILE));
   fs.writeFileSync(HTML_FILE, html, 'utf8');
-  console.log(col.dim('  (バックアップ: portfolio.html.bak)'));
+  console.log(col.dim('  (バックアップ: index.html.bak)'));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -811,7 +811,7 @@ function showHelp() {
   console.log('  node portfolio-cli.js top show              Topページ表示');
   console.log('  node portfolio-cli.js top edit              Topページ編集');
   console.log('');
-  console.log(col.dim('  ※ 保存時に portfolio.html.bak がバックアップとして作成されます。'));
+  console.log(col.dim('  ※ 保存時に index.html.bak がバックアップとして作成されます。'));
   console.log('');
 }
 

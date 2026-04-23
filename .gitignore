@@ -31,3 +31,6 @@ Thumbs.db
 
 # Backup files
 *.bak
+
+# 旧ファイル（index.html にリネーム済み）
+portfolio.html

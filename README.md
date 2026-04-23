@@ -1,7 +1,9 @@
 # my-portfolio
 
-ポートフォリオサイト (`portfolio.html`) のコンテンツを管理するCLIツールです。  
+ポートフォリオサイト (`index.html`) のコンテンツを管理するCLIツールです。  
 Top ページ・Blog 記事・Works をターミナルから追加・編集・削除できます。
+
+GitHub Pages で公開する場合は `index.html` と `images/` フォルダをそのままコミットして push するだけで公開できます。管理画面（`admin.html` / `server.js`）はローカル専用です。
 
 ## 必要な環境
 
@@ -66,7 +68,7 @@ node server.js
 | http://localhost:3000 | ポートフォリオ本体 |
 | http://localhost:3000/admin | 管理画面（GUI） |
 
-`portfolio.html` を保存するとブラウザが自動でリロードされます（ホットリロード）。  
+`index.html` を保存するとブラウザが自動でリロードされます（ホットリロード）。  
 ポート番号は環境変数 `PORT` で変更できます。
 
 ```bash
@@ -77,7 +79,7 @@ PORT=8080 node server.js
 
 ```
 my-portfolio/
-├── portfolio.html       # ポートフォリオ本体
+├── index.html       # ポートフォリオ本体
 ├── portfolio-cli.js     # コンテンツ管理CLI
 ├── server.js            # ローカル開発サーバー
 ├── images/              # アップロードした画像
@@ -86,6 +88,6 @@ my-portfolio/
 
 ## メモ
 
-- 保存時に `portfolio.html.bak` が自動生成されます（直前のバックアップ）。
+- 保存時に `index.html.bak` が自動生成されます（直前のバックアップ）。
 - 画像を登録すると `images/` フォルダへ自動コピーされます。
 - デバッグ時は `DEBUG=1` 環境変数を付けるとスタックトレースが表示されます。
