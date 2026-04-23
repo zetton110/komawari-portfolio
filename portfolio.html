@@ -1,0 +1,1003 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Portfolio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#fafaf7;
+    --ink:#161616;
+    --ink-soft:#555;
+    --muted:#8a8a88;
+    --line:#161616;
+    --idea:#5b8c3e;
+    --tech:#b23a3a;
+    --border:1.5px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--paper);color:var(--ink);font-family:'Zen Kaku Gothic New',sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+  .page{
+    max-width:1120px;
+    margin:0 auto;
+    padding:40px 40px 80px;
+  }
+
+  /* ===== Masthead ===== */
+  .masthead{
+    display:flex;align-items:baseline;justify-content:space-between;gap:20px;
+    padding-bottom:18px;
+    border-bottom: var(--border) solid var(--ink);
+    margin-bottom:40px;
+  }
+  .brand{display:flex;align-items:baseline;gap:14px}
+  .logo{
+    font-family:'Zen Kaku Gothic New',sans-serif;
+    font-weight:900;
+    font-size:22px;
+    letter-spacing:.02em;
+  }
+  .tagline{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--muted);
+  }
+  .nav{display:flex;gap:22px}
+  .nav a{
+    font-size:13px;font-weight:500;
+    color:var(--ink-soft);
+    transition:color .12s;
+  }
+  .nav a:hover, .nav a.active{color:var(--ink)}
+
+  /* ===== Hero ===== */
+  .hero{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    border:var(--border) solid var(--ink);
+    margin-bottom:64px;
+  }
+  .hero > div{padding:36px 32px}
+  .hero-intro{
+    border-right:var(--border) solid var(--ink);
+  }
+  .hero-intro h1{
+    font-family:'Zen Kaku Gothic New',sans-serif;
+    font-weight:900;
+    font-size:34px;
+    line-height:1.3;
+    letter-spacing:.01em;
+  }
+  .hero-intro h1 small{
+    display:block;
+    font-size:13px;
+    font-weight:500;
+    color:var(--muted);
+    font-family:'JetBrains Mono',monospace;
+    letter-spacing:.1em;
+    margin-bottom:10px;
+  }
+  .hero-intro .lede{
+    margin-top:18px;
+    font-size:14px;
+    line-height:1.85;
+    color:var(--ink-soft);
+    max-width:42ch;
+  }
+  .hero-now h4{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;font-weight:600;
+    letter-spacing:.15em;
+    color:var(--muted);
+    margin-bottom:16px;
+  }
+  .hero-now ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+  .hero-now li{
+    display:grid;grid-template-columns: 60px 1fr;
+    gap:14px;align-items:baseline;
+    font-size:13px;line-height:1.5;
+    padding-bottom:10px;
+    border-bottom: 1px dashed #ddd;
+  }
+  .hero-now li:last-child{border-bottom:none;padding-bottom:0}
+  .hero-now li .k{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    color:var(--muted);
+    letter-spacing:.1em;
+  }
+
+  /* ===== Latest strip (最新記事への動線) ===== */
+  .latest-strip{
+    display:grid;
+    grid-template-columns: auto auto 1fr auto auto;
+    align-items:center;gap:18px;
+    border-top:1px solid var(--ink);
+    border-bottom:1px solid var(--ink);
+    padding:10px 16px;
+    margin:-32px 0 48px;
+    background:transparent;
+    font-family:'Zen Kaku Gothic New',sans-serif;
+    text-align:left;
+    width:100%;
+    transition: background .12s;
+  }
+  .latest-strip:hover{background:#f3efe4}
+  .latest-strip .label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.2em;color:var(--muted);
+    white-space:nowrap;
+  }
+  .latest-strip .cat-tag{
+    display:inline-flex;align-items:center;gap:6px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.08em;
+    color:var(--ink-soft);
+  }
+  .latest-strip .cat-tag .dot{width:7px;height:7px;border-radius:50%}
+  .latest-strip[data-cat="idea"] .cat-tag .dot{background:var(--idea)}
+  .latest-strip[data-cat="tech"] .cat-tag .dot{background:var(--tech)}
+  .latest-strip h4{
+    font-weight:500;font-size:13.5px;line-height:1.5;
+    color:var(--ink);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .latest-strip .date{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;color:var(--muted);letter-spacing:.04em;
+    white-space:nowrap;
+  }
+  .latest-strip .arrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;color:var(--ink);
+  }
+
+  /* ===== Section head ===== */
+  .section-head{
+    display:flex;align-items:baseline;justify-content:space-between;
+    margin: 0 0 24px;
+  }
+  .section-head h2{
+    font-family:'Zen Kaku Gothic New',sans-serif;
+    font-weight:900;
+    font-size:22px;
+    letter-spacing:.02em;
+  }
+  .section-head h2 .sub{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    font-weight:500;
+    color:var(--muted);
+    letter-spacing:.15em;
+    margin-right:10px;
+  }
+  .section-head .count{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;color:var(--muted);
+  }
+
+  /* ===== Filter ===== */
+  .filter-bar{
+    display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+    margin-bottom:24px;
+    padding-bottom:16px;
+    border-bottom: var(--border) solid var(--ink);
+  }
+  .cat-btn{
+    font-size:13px;
+    font-weight:500;
+    padding:5px 12px;
+    border:var(--border) solid var(--ink);
+    background:transparent;
+    color:var(--ink);
+    display:inline-flex;align-items:center;gap:8px;
+    transition: background .12s, color .12s;
+  }
+  .cat-btn .dot{width:8px;height:8px;border-radius:50%;background:var(--ink)}
+  .cat-btn[data-k="idea"] .dot{background:var(--idea)}
+  .cat-btn[data-k="tech"] .dot{background:var(--tech)}
+  .cat-btn .n{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+  .cat-btn.active{background:var(--ink);color:var(--paper)}
+  .cat-btn.active .n{color:#aaa}
+  .cat-btn:hover:not(.active){background:#f0ede5}
+
+  .search-wrap{
+    margin-left:auto;
+    display:flex;align-items:center;gap:8px;
+    border:var(--border) solid var(--ink);
+    padding:5px 12px;
+    min-width:200px;
+  }
+  .search-wrap input{
+    border:none;background:transparent;outline:none;
+    font-family:'Zen Kaku Gothic New',sans-serif;
+    font-size:13px;width:100%;
+  }
+  .search-wrap .ico{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+
+  /* ===== Blog grid — 漫画のコマ割り ===== */
+  .blog-grid{
+    display:grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-auto-rows: 92px;
+    grid-auto-flow: dense;
+    border:var(--border) solid var(--ink);
+  }
+  .post{
+    border-right: var(--border) solid var(--ink);
+    border-bottom: var(--border) solid var(--ink);
+    padding:20px 22px;
+    display:flex;flex-direction:column;
+    position:relative;
+    text-align:left;
+    width:100%;
+    background:transparent;
+    transition: background .12s;
+  }
+  .post:hover{background:#f3efe4}
+  /* remove outer edges so outer frame doubles up cleanly */
+  .post.edge-r{border-right:none}
+  .post.edge-b{border-bottom:none}
+
+  .post .meta-top{
+    display:flex;align-items:center;justify-content:space-between;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    color:var(--muted);
+    letter-spacing:.08em;
+    margin-bottom:12px;
+  }
+  .post .cat-tag{
+    display:inline-flex;align-items:center;gap:6px;
+    color:var(--ink);
+    font-weight:500;
+  }
+  .post .cat-tag .dot{width:7px;height:7px;border-radius:50%}
+  .post[data-cat="idea"] .cat-tag .dot{background:var(--idea)}
+  .post[data-cat="tech"] .cat-tag .dot{background:var(--tech)}
+
+  .post h3{
+    font-family:'Zen Kaku Gothic New',sans-serif;
+    font-weight:700;
+    line-height:1.45;
+    letter-spacing:.005em;
+  }
+  .post .excerpt{
+    font-size:13px;line-height:1.75;
+    color:var(--ink-soft);
+    margin-top:10px;
+    flex:1;
+  }
+  .post .foot{
+    margin-top:14px;
+    display:flex;align-items:center;justify-content:space-between;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    color:var(--muted);
+  }
+  .post .foot .tags{display:flex;gap:10px;flex-wrap:wrap}
+  .post .foot .read{color:var(--ink);font-weight:500}
+
+  /* Varied panel sizes — コマ割り (always fills 6-col rows) */
+  .post.s-hero{ grid-column: span 4; grid-row: span 3; padding:30px 30px; }
+  .post.s-hero h3{font-size:24px}
+  .post.s-hero .excerpt{font-size:14px;max-width:44ch}
+  .post.s-tall{ grid-column: span 2; grid-row: span 3; }
+  .post.s-tall h3{font-size:17px}
+  .post.s-wide{ grid-column: span 3; grid-row: span 2; }
+  .post.s-wide h3{font-size:17px}
+  .post.s-wide-lg{ grid-column: span 4; grid-row: span 2; }
+  .post.s-wide-lg h3{font-size:18px}
+  .post.s-sq{ grid-column: span 2; grid-row: span 2; }
+  .post.s-sq h3{font-size:15px}
+  .post.s-sm{ grid-column: span 2; grid-row: span 2; }
+  .post.s-sm h3{font-size:15px}
+
+  /* When filtered by category or search — uniform grid so rows still fill */
+  .blog-grid.uniform .post{
+    grid-column: span 2 !important;
+    grid-row: span 2 !important;
+    padding:20px 22px !important;
+  }
+  .blog-grid.uniform .post h3{font-size:15px !important}
+  .blog-grid.uniform .post .excerpt{font-size:13px !important;max-width:none !important}
+
+  .post.hidden{display:none}
+
+  /* ===== Empty state ===== */
+  .empty{
+    grid-column: 1 / -1;
+    grid-row: span 4;
+    padding:80px 30px;
+    text-align:center;
+    border-right:none;border-bottom:none;
+  }
+  .empty .b{font-size:18px;font-weight:700}
+  .empty .s{font-family:'JetBrains Mono',monospace;font-size:11px;margin-top:8px;color:var(--muted)}
+
+  /* ===== Works ===== */
+  .works{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    border:var(--border) solid var(--ink);
+    margin-top:64px;
+  }
+  .work{
+    padding:18px;
+    border-right:var(--border) solid var(--ink);
+    display:flex;flex-direction:column;gap:12px;
+  }
+  .work:last-child{border-right:none}
+  .work .thumb{
+    aspect-ratio: 4/3;
+    border:var(--border) solid var(--ink);
+    background:
+      repeating-linear-gradient(45deg, rgba(20,20,20,.06) 0 1px, transparent 1px 8px);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;color:var(--muted);
+    text-align:center;padding:10px;
+  }
+  .work h4{font-weight:700;font-size:14px;line-height:1.4}
+  .work .meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);display:flex;justify-content:space-between}
+
+  /* ===== Footer ===== */
+  .foot-panel{
+    margin-top:64px;
+    padding-top:24px;
+    border-top: var(--border) solid var(--ink);
+    display:flex;justify-content:space-between;align-items:center;gap:20px;
+    flex-wrap:wrap;
+  }
+  .foot-panel .links{display:flex;gap:18px;flex-wrap:wrap}
+  .foot-panel .links a{
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+  .foot-panel .links a:hover{color:var(--ink)}
+  .foot-panel .copy{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;color:var(--muted);
+  }
+
+  /* ===== Timeline (simple) ===== */
+  .timeline{
+    border:var(--border) solid var(--ink);
+    margin-top:0;
+  }
+  .tl-group{
+    border-bottom:var(--border) solid var(--ink);
+  }
+  .tl-group:last-child{border-bottom:none}
+  .tl-group-head{
+    padding:14px 22px;
+    background:#f5f1e6;
+    border-bottom:1px solid var(--ink);
+    display:flex;align-items:baseline;gap:14px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.2em;color:var(--muted);
+  }
+  .tl-group-head .t{
+    font-family:'Zen Kaku Gothic New',sans-serif;
+    font-weight:700;font-size:13px;
+    color:var(--ink);letter-spacing:.02em;
+  }
+  .tl-row{
+    display:grid;
+    grid-template-columns: 120px 1fr 80px;
+    align-items:baseline;
+    padding:18px 22px;
+    border-bottom:1px dashed #ddd;
+    gap:20px;
+  }
+  .tl-row:last-child{border-bottom:none}
+  .tl-row .when{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;color:var(--muted);letter-spacing:.08em;
+  }
+  .tl-row .when .y{color:var(--ink);font-weight:600;font-size:12px;margin-right:6px}
+  .tl-row .main h4{
+    font-weight:700;font-size:15px;line-height:1.5;
+    margin-bottom:4px;
+  }
+  .tl-row .main .role{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;color:var(--ink-soft);letter-spacing:.05em;
+  }
+  .tl-row .main .role .co{color:var(--ink);font-weight:600}
+  .tl-row .pg{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;color:var(--muted);letter-spacing:.12em;
+    text-align:right;
+  }
+
+  /* ===== Modal ===== */
+  .modal-bg{
+    position:fixed;inset:0;background:rgba(20,20,20,.4);
+    display:none;align-items:center;justify-content:center;
+    z-index:200;padding:30px;
+  }
+  .modal-bg.open{display:flex}
+  .modal{
+    background:var(--paper);
+    border:var(--border) solid var(--ink);
+    max-width:640px;width:100%;max-height:90vh;overflow:auto;
+    padding:40px 44px;
+    position:relative;
+  }
+  .modal .close{
+    position:absolute;top:16px;right:16px;
+    font-size:16px;color:var(--muted);
+  }
+  .modal .close:hover{color:var(--ink)}
+  .modal .m-cat{
+    display:inline-flex;align-items:center;gap:6px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.1em;
+    margin-bottom:14px;color:var(--ink-soft);
+  }
+  .modal .m-cat .dot{width:7px;height:7px;border-radius:50%}
+  .modal .m-cat[data-cat="idea"] .dot{background:var(--idea)}
+  .modal .m-cat[data-cat="tech"] .dot{background:var(--tech)}
+  .modal h2{font-weight:900;font-size:26px;line-height:1.35}
+  .modal .m-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:10px;display:flex;gap:16px;flex-wrap:wrap}
+  .modal .m-body{margin-top:22px;font-size:14px;line-height:1.9;color:var(--ink-soft)}
+  .modal .m-body p{margin-bottom:12px}
+
+  @media (max-width: 900px){
+    .page{padding:28px 20px 60px}
+    .masthead{flex-direction:column;align-items:flex-start;gap:14px}
+    .nav{gap:16px;flex-wrap:wrap}
+    .hero{grid-template-columns:1fr}
+    .hero > div{padding:28px 22px}
+    .hero-intro{border-right:none;border-bottom:var(--border) solid var(--ink)}
+    .hero-intro h1{font-size:26px}
+    .hero-now li{grid-template-columns:50px 1fr;gap:10px;font-size:12.5px}
+
+    .section-head{flex-wrap:wrap;gap:8px;margin-bottom:18px}
+    .section-head h2{font-size:18px}
+    .section-head h2 .sub{display:block;margin-bottom:4px;margin-right:0}
+
+    /* Latest strip */
+    .latest-strip{
+      grid-template-columns:auto 1fr auto;
+      gap:12px;padding:10px 14px;margin:-16px 0 32px;
+    }
+    .latest-strip .label{display:none}
+    .latest-strip .date{font-size:10px}
+    .latest-strip h4{font-size:13px}
+
+    .filter-bar{gap:6px}
+    .search-wrap{margin-left:0;min-width:0;flex:1 1 100%;order:10}
+    .cat-btn{font-size:12px;padding:4px 10px}
+
+    /* Blog grid: 2-column, all posts uniform square-ish, source order preserved */
+    .blog-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:auto;grid-auto-flow:row}
+    .blog-grid .post,
+    .blog-grid.uniform .post{
+      grid-column:span 1 !important;
+      grid-row:auto !important;
+      padding:18px 18px !important;
+      min-height:180px;
+      border-right:var(--border) solid var(--ink);
+      border-bottom:var(--border) solid var(--ink);
+    }
+    /* remove right border on every 2nd cell so outer frame doubles cleanly */
+    .blog-grid .post:nth-child(2n){border-right:none}
+    .post.s-hero h3,
+    .blog-grid .post h3,
+    .blog-grid.uniform .post h3{font-size:15px !important}
+    .post.s-hero .excerpt,
+    .blog-grid .post .excerpt{font-size:12.5px !important;max-width:none !important}
+    .post .foot .tags{gap:6px}
+    /* reset edge helpers at small size — we control borders above */
+    .post.edge-r{border-right:var(--border) solid var(--ink)}
+    .post.edge-b{border-bottom:var(--border) solid var(--ink)}
+
+    .empty{grid-column:1 / -1 !important;padding:50px 20px}
+
+    .works{grid-template-columns:repeat(2,1fr)}
+    .works .work{border-bottom:var(--border) solid var(--ink)}
+    .works .work:nth-child(2n){border-right:none}
+    .works .work:nth-last-child(-n+2){border-bottom:none}
+
+    .foot-panel{flex-direction:column;align-items:flex-start;gap:12px}
+
+    /* Timeline */
+    .tl-row{grid-template-columns:100px 1fr 60px;gap:14px;padding:14px 18px}
+    .tl-row .main h4{font-size:14px}
+    .tl-group-head{padding:10px 18px}
+
+    .modal-bg{padding:16px}
+    .modal{padding:28px 22px}
+    .modal h2{font-size:20px}
+    .modal .m-body{font-size:13px;line-height:1.8}
+  }
+
+  @media (max-width: 560px){
+    .page{padding:22px 14px 48px}
+    .hero-intro h1{font-size:22px}
+    .hero-intro .lede{font-size:13px}
+
+    /* Latest strip: single column stack */
+    .latest-strip{
+      grid-template-columns:auto 1fr;
+      gap:8px 12px;
+    }
+    .latest-strip .cat-tag{grid-column:1}
+    .latest-strip .date{grid-column:2;text-align:right}
+    .latest-strip h4{grid-column:1 / -1;white-space:normal;font-size:13px}
+    .latest-strip .arrow{display:none}
+
+    /* Blog grid: single column at phone size */
+    .blog-grid{grid-template-columns:1fr}
+    .blog-grid .post,
+    .blog-grid.uniform .post{
+      grid-column:span 1 !important;
+      border-right:none !important;
+      min-height:0;
+      padding:16px 18px !important;
+    }
+    .blog-grid .post:last-child{border-bottom:none}
+
+    .works{grid-template-columns:1fr}
+    .works .work{border-right:none;border-bottom:var(--border) solid var(--ink)}
+    .works .work:last-child{border-bottom:none}
+
+    /* Timeline: stacked rows */
+    .tl-row{
+      grid-template-columns:90px 1fr;
+      gap:10px;padding:12px 16px;
+    }
+    .tl-row .pg{display:none}
+    .tl-row .main h4{font-size:13.5px}
+    .tl-row .main .role{font-size:10px}
+
+    .masthead{padding-bottom:14px;margin-bottom:28px}
+    .logo{font-size:18px}
+    .section-head h2{font-size:16px}
+
+    .filter-bar{padding-bottom:12px;margin-bottom:18px}
+    .cat-btn{padding:4px 8px}
+    .cat-btn .n{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo } = React;
+
+const POSTS = [
+  {
+    id: 1, cat: "idea", size: "s-hero",
+    title: "コマ割りで考える、情報設計のリズム",
+    date: "2026.04.18", read: "8 min",
+    tags: ["design", "essay"],
+    excerpt: "ウェブのレイアウトを一枚絵ではなく『漫画のページ』として捉え直すと何が起こるか。視線誘導・間・緩急の話。",
+    body: [
+      "漫画家はコマの大小と余白で読者の視線を誘導する。大ゴマでは時間が止まり、小ゴマの連続ではテンポが生まれる。これはウェブのヒーロー、カード、ナビゲーションにもそのまま応用できる考え方だ。",
+      "『全部を主役にすると、誰も主役にならない』——これは紙もスクリーンも同じで、強弱のない画面は読まれない。設計で最初に決めるべきは何を大ゴマにするか、だと思っている。",
+      "実務では、ワイヤー段階でグリッドを壊す勇気が要る。揃いすぎたレイアウトは読まれず、崩れすぎたレイアウトは疲れる。その間のちょうどいいリズムを掴む訓練として、私はよく漫画を模写している。"
+    ]
+  },
+  {
+    id: 2, cat: "tech", size: "s-tall",
+    title: "CSS Grid で不規則レイアウトを気持ちよく組む",
+    date: "2026.04.12", read: "6 min",
+    tags: ["css", "grid"],
+    excerpt: "grid-column: span と grid-auto-rows を使いこなすと、手組みっぽいのに安定したレイアウトになる。",
+    body: [
+      "このサイト自体がその実例。grid-template-columns を 6 分割にしておき、各カードに span 2/3/4 を振っていくだけで、崩れない手書き風レイアウトが手に入る。",
+      "ポイントは grid-auto-rows を固定にしておくこと。これで span を縦横に効かせても破綻しない。",
+      "JSで並び替えするときも、カード側の span 指定を維持すれば自動的にフィットしてくれる。"
+    ]
+  },
+  {
+    id: 3, cat: "idea", size: "s-wide",
+    title: "締め切りは創造の友である",
+    date: "2026.04.05", read: "4 min",    tags: ["mindset"],
+    excerpt: "余白があるほどいい仕事ができる、とは限らない。制約は思考の形を決める型だ。",
+    body: [
+      "無制限に時間を与えられて良い仕事が出てきた試しがない。むしろ『金曜までに3案』と切られた瞬間、何故か脳が動き出す。",
+      "締め切りは敵ではなく、判断を下すための最後の一押しをくれる存在。"
+    ]
+  },
+  {
+    id: 4, cat: "tech", size: "s-wide",
+    title: "useSyncExternalStore、どこで使う?",
+    date: "2026.03.28", read: "5 min",
+    tags: ["react"],
+    excerpt: "外部ストアとの同期。ユースケースを3つ。",
+    body: [
+      "React 18 で追加された useSyncExternalStore は、自前のストアや DOM API と React の描画を安全に同期させるためのフック。",
+      "よく使う場面は (1) localStorage との同期 (2) window.matchMedia の購読 (3) サードパーティストア連携。"
+    ]
+  },
+  {
+    id: 5, cat: "idea", size: "s-sq",
+    title: "散歩と、頭の中のインデックス",
+    date: "2026.03.20", read: "3 min",
+    tags: ["essay"],
+    excerpt: "歩いているとき、考えは並び替わる。座っているときはそれができない。",
+    body: [
+      "机の前ではいいアイデアが出ないのに、コンビニまでの5分で答えが出ることがある。身体を動かすと、記憶のインデックスが再構築される気がしている。"
+    ]
+  },
+  {
+    id: 6, cat: "tech", size: "s-sq",
+    title: "oklch() に乗り換えて3ヶ月",
+    date: "2026.03.14", read: "4 min",
+    tags: ["css", "color"],
+    excerpt: "色の明度を揃えたいときは oklch 一択になった。",
+    body: [
+      "hsl だとチャンネルをいじると知覚的な明度が揺れてしまう。oklch は L を固定して H だけ動かせば、同じ明るさのパレットが作れる。"
+    ]
+  },
+  {
+    id: 7, cat: "idea", size: "s-sq",
+    title: "読書メモは読んだ本の数だけ書かない",
+    date: "2026.03.08", read: "3 min",
+    tags: ["reading"],
+    excerpt: "全ての本にメモは要らない。響いた一冊に何日も滞在する。",
+    body: [
+      "多読より滞在。速読ブームが去って久しいが、いい本は3回読むくらいがちょうどいい。"
+    ]
+  },
+  {
+    id: 8, cat: "tech", size: "s-wide-lg",
+    title: "View Transitions API で画面遷移に『間』を作る",
+    date: "2026.02.28", read: "7 min",
+    tags: ["web", "animation"],
+    excerpt: "SPA の硬い遷移にひと呼吸入れる。ネイティブアプリっぽさの正体はここにある。",
+    body: [
+      "View Transitions API を使うと、DOM のスナップショットを取って前後を自動でクロスフェードしてくれる。たったそれだけで、画面のつながりが劇的に変わる。"
+    ]
+  },
+  {
+    id: 9, cat: "idea", size: "s-sq",
+    title: "Less, but better を日本語で考える",
+    date: "2026.02.20", read: "4 min",
+    tags: ["design"],
+    excerpt: "『少ないほうがいい』ではなく『引き算の方が、効く』。",
+    body: [
+      "ディーター・ラムスの言葉は、翻訳の仕方で意味がだいぶ変わる。"
+    ]
+  },
+  {
+    id:10, cat:"tech", size:"s-wide-lg",
+    title:"TypeScript 5.4 の NoInfer が気持ちいい",
+    date:"2026.02.14", read:"3 min",
+    tags:["typescript"],
+    excerpt:"ジェネリクスの型推論を部分的に止める一手。外側のジェネリクス推論を止めて、意図した型だけを受け付けるようにできる。",
+    body:["推論してほしいところと、してほしくないところが混在する場面で効く。"]
+  }
+];
+
+const CAT_LABEL = { idea: "Idea", tech: "Tech", all: "All" };
+
+const TIMELINE = {
+  work: [
+    { ep: "01", year: "2018", month: "APR", page: "P.001", role: "Junior Designer", co: "株式会社コスモ・スタジオ", title: "はじまりの一歩、グラフィックから。", desc: "印刷物とウェブのアシスタント。Illustrator と InDesign の腕が上がった時期。", tags:["Print","Web","Adobe"], icon:"✎" },
+    { ep: "02", year: "2019", month: "OCT", page: "P.014", role: "UI Designer", co: "Nami Inc.", title: "アプリの画面を、はじめて任される。", desc: "読書ログアプリの UI を担当。初めての実装者との共同作業で、コードに近づく。", tags:["iOS","Figma"], icon:"◧" },
+    { ep: "03", year: "2021", month: "JUN", page: "P.033", role: "Product Designer", co: "Tsumiki", title: "デザインシステムを、ゼロから組む。", desc: "トークン設計・ドキュメント整備・React Native 実装までを通した3年間。", tags:["DesignSystem","Tokens","RN"], icon:"▦" },
+    { ep: "04", year: "2024", month: "FEB", page: "P.058", role: "Senior Product Designer", co: "Haiku Lab", title: "書くことの道具を、書く人として作る。", desc: "メモエディタのプロダクトリード。書き手の視点から機能を削る/足すを繰り返す。", tags:["Editor","Web","Lead"], icon:"☰" },
+    { ep: "05", year: "2025", month: "NOV", page: "P.082", role: "Design Lead", co: "komawari. (独立)", title: "自分の屋号で、もう一度。", desc: "独立して屋号「komawari.」を立ち上げる。現在はデザインシステム刷新案件を中心に活動。", tags:["Freelance","Consulting"], icon:"☄" }
+  ],
+  edu: [
+    { ep: "番外01", year: "2014", month: "APR", page: "P.000", role: "Undergrad", co: "武蔵野美術大学 視覚伝達デザイン学科", title: "紙と画面のあいだを、行ったり来たり。", desc: "在学中はブックデザインと展示設計を中心に。卒業制作は「コマ割りの文法」。", tags:["Typography","Editorial"], icon:"✦" },
+    { ep: "番外02", year: "2023", month: "MAR", page: "P.050", role: "Workshop", co: "IAMAS 集中講座", title: "情報設計とナラティブ構造の再入門。", desc: "物語構造をデジタルプロダクトにどう適用するか、2週間の集中講座で集中的に考える。", tags:["Narrative","Research"], icon:"✦" }
+  ],
+  side: [
+    { ep: "特別編01", year: "2022", page: "P.045", role: "Book", co: "自費出版", title: "『コマ割りグリッド』刊行(準備中)", desc: "ウェブレイアウトを漫画の文法で解説する本。現在執筆中、2026冬に刊行予定。", tags:["Writing","Self-publish"], icon:"❒", month:"WIP" },
+    { ep: "特別編02", year: "2023", page: "P.060", role: "Talk", co: "Designship 2023", title: "『余白の強度』というテーマで登壇。", desc: "余白は引き算ではなく、強度をもった造形である、という話を40分。", tags:["Speaking"], icon:"✿", month:"OCT" }
+  ]
+};
+
+function Masthead({ current, goTo }){
+  return (
+    <header className="masthead">
+      <div className="brand">
+        <div className="logo">komawari.</div>
+        <div className="tagline">// portfolio & notebook</div>
+      </div>
+      <nav className="nav">
+        {["Home","Blog","Works","Timeline"].map(n => (
+          <a key={n} href="#" className={n===current?"active":""} onClick={e=>{e.preventDefault();goTo(n);}}>{n}</a>
+        ))}
+      </nav>
+    </header>
+  );
+}
+
+function LatestStrip({ posts, onOpen, goTo }){
+  const latest = [...posts].sort((a,b)=> b.date.localeCompare(a.date))[0];
+  if(!latest) return null;
+  return (
+    <button
+      className="latest-strip"
+      data-cat={latest.cat}
+      onClick={()=>onOpen(latest)}
+    >
+      <span className="label">// LATEST</span>
+      <h4>{latest.title}</h4>
+      <span className="cat-tag"><span className="dot"></span>{CAT_LABEL[latest.cat]}</span>
+      <span className="date">{latest.date}</span>
+      <span className="arrow">→</span>
+    </button>
+  );
+}
+
+function Hero(){
+  return (
+    <section className="hero">
+      <div className="hero-intro">
+        <h1>
+          <small>// INTRO</small>
+          作るひと、書くひと。
+        </h1>
+        <p className="lede">
+          プロダクトデザイナーの S. のポートフォリオ。
+          ここは完成品の陳列棚ではなく、試作と思考を置く作業台のような場所です。
+          下のブログには Idea(考えたこと)と Tech(作ったこと)を分けて並べています。
+        </p>
+      </div>
+      <div className="hero-now">
+        <h4>// NOW</h4>
+        <ul>
+          <li><span className="k">WORK</span><span>社内向けデザインシステムの刷新</span></li>
+          <li><span className="k">WRITE</span><span>コマ割りグリッドの本を書いている</span></li>
+          <li><span className="k">LIFE</span><span>犬と早朝の散歩、ほぼ毎日</span></li>
+          <li><span className="k">BASE</span><span>Tokyo / Remote</span></li>
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+function FilterBar({ cat, setCat, q, setQ, counts }){
+  const cats = [
+    { key:"all",  label:"All" },
+    { key:"idea", label:"Idea" },
+    { key:"tech", label:"Tech" }
+  ];
+  return (
+    <div className="filter-bar">
+      {cats.map(c=>(
+        <button key={c.key} data-k={c.key} className={"cat-btn"+(cat===c.key?" active":"")} onClick={()=>setCat(c.key)}>
+          <span className="dot"></span>
+          {c.label}
+          <span className="n">{String(counts[c.key]).padStart(2,"0")}</span>
+        </button>
+      ))}
+      <div className="search-wrap">
+        <span className="ico">⌕</span>
+        <input placeholder="記事を検索..." value={q} onChange={e=>setQ(e.target.value)} />
+      </div>
+    </div>
+  );
+}
+
+function Post({ p, onOpen, edgeR, edgeB }){
+  const cls = ["post", p.size];
+  if(edgeR) cls.push("edge-r");
+  if(edgeB) cls.push("edge-b");
+  return (
+    <button className={cls.join(" ")} data-cat={p.cat} onClick={()=>onOpen(p)}>
+      <div className="meta-top">
+        <span className="cat-tag"><span className="dot"></span>{CAT_LABEL[p.cat]}</span>
+        <span>{p.date}</span>
+      </div>
+      <h3>{p.title}</h3>
+      <p className="excerpt">{p.excerpt}</p>
+      <div className="foot">
+        <div className="tags">{p.tags.map(t=><span key={t}>#{t}</span>)}</div>
+        <span className="read">{p.read} →</span>
+      </div>
+    </button>
+  );
+}
+
+function BlogGrid({ posts, filtered, onOpen }){
+  if (posts.length===0){
+    return (
+      <div className="blog-grid">
+        <div className="post empty edge-r edge-b">
+          <div className="b">記事が見つかりませんでした</div>
+          <div className="s">// try different keywords</div>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className={"blog-grid"+(filtered?" uniform":"")}>
+      {posts.map(p => <Post key={p.id} p={p} onOpen={onOpen} />)}
+    </div>
+  );
+}
+
+function Works(){
+  const items = [
+    { t:"Ledger — 家計簿アプリ",   y:"2025", k:"iOS" },
+    { t:"Tsumiki — デザインシステム",y:"2024", k:"Tokens" },
+    { t:"Haiku — メモエディタ",     y:"2024", k:"Web" },
+    { t:"Nami — 読書ログ",         y:"2023", k:"Mobile" }
+  ];
+  return (
+    <div className="works">
+      {items.map((it,i)=>(
+        <div className="work" key={i}>
+          <div className="thumb">[ thumbnail ]</div>
+          <h4>{it.t}</h4>
+          <div className="meta"><span>{it.y}</span><span>{it.k}</span></div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Timeline(){
+  const renderRow = (r, i) => (
+    <div className="tl-row" key={r.ep+i}>
+      <div className="when">
+        <span className="y">{r.year}</span>
+        <span>{r.month}</span>
+      </div>
+      <div className="main">
+        <h4>{r.title}</h4>
+        <div className="role">{r.role} / <span className="co">{r.co}</span></div>
+      </div>
+      <div className="pg">{r.page}</div>
+    </div>
+  );
+
+  return (
+    <div className="timeline">
+      <div className="tl-group">
+        <div className="tl-group-head">
+          <span>PART 1</span>
+          <span className="t">本編 — Work</span>
+        </div>
+        {TIMELINE.work.map(renderRow)}
+      </div>
+      <div className="tl-group">
+        <div className="tl-group-head">
+          <span>PART 2</span>
+          <span className="t">番外編 — Education</span>
+        </div>
+        {TIMELINE.edu.map(renderRow)}
+      </div>
+      <div className="tl-group">
+        <div className="tl-group-head">
+          <span>PART 3</span>
+          <span className="t">特別編 — Side</span>
+        </div>
+        {TIMELINE.side.map(renderRow)}
+      </div>
+    </div>
+  );
+}
+
+function Modal({ post, onClose }){
+  useEffect(()=>{
+    if(!post) return;
+    const h = e => { if(e.key==="Escape") onClose(); };
+    window.addEventListener("keydown", h);
+    return ()=>window.removeEventListener("keydown", h);
+  },[post,onClose]);
+  if(!post) return null;
+  return (
+    <div className={"modal-bg open"} onClick={onClose}>
+      <div className="modal" onClick={e=>e.stopPropagation()}>
+        <button className="close" onClick={onClose}>✕</button>
+        <span className="m-cat" data-cat={post.cat}>
+          <span className="dot"></span>{CAT_LABEL[post.cat]}
+        </span>
+        <h2>{post.title}</h2>
+        <div className="m-meta">
+          <span>{post.date}</span>
+          <span>{post.read}</span>
+          <span>{post.tags.map(t=>"#"+t).join("  ")}</span>
+        </div>
+        <div className="m-body">
+          {post.body.map((p,i)=><p key={i}>{p}</p>)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function App(){
+  const [cat, setCat] = useState("all");
+  const [q, setQ] = useState("");
+  const [open, setOpen] = useState(null);
+  const [current, setCurrent] = useState("Home");
+
+  const counts = useMemo(()=>({
+    all: POSTS.length,
+    idea: POSTS.filter(p=>p.cat==="idea").length,
+    tech: POSTS.filter(p=>p.cat==="tech").length,
+  }),[]);
+
+  const filtered = useMemo(()=>{
+    return POSTS.filter(p=>{
+      if(cat!=="all" && p.cat!==cat) return false;
+      if(q){
+        const s = (p.title+p.excerpt+p.tags.join(" ")).toLowerCase();
+        if(!s.includes(q.toLowerCase())) return false;
+      }
+      return true;
+    });
+  }, [cat, q]);
+
+  const goTo = (n) => {
+    setCurrent(n);
+    if(n === "Home"){
+      window.scrollTo({top:0, behavior:"smooth"});
+      return;
+    }
+    const idMap = { Blog:"sec-blog", Works:"sec-works", Timeline:"sec-timeline", Contact:"sec-contact" };
+    const el = document.getElementById(idMap[n]);
+    if(el){
+      const y = el.getBoundingClientRect().top + window.scrollY - 20;
+      window.scrollTo({top:y, behavior:"smooth"});
+    }
+  };
+
+  return (
+    <div className="page">
+      <Masthead current={current} goTo={goTo} />
+
+      <Hero />
+      <LatestStrip posts={POSTS} onOpen={setOpen} goTo={goTo} />
+
+      <div id="sec-blog" className="section-head">
+        <h2><span className="sub">CH.01</span>Blog</h2>
+        <div className="count">{String(filtered.length).padStart(2,"0")} / {String(POSTS.length).padStart(2,"0")}</div>
+      </div>
+      <FilterBar cat={cat} setCat={setCat} q={q} setQ={setQ} counts={counts} />
+      <BlogGrid posts={filtered} filtered={cat!=="all" || q.length>0} onOpen={setOpen} />
+
+      <div id="sec-works" className="section-head" style={{marginTop:64}}>
+        <h2><span className="sub">CH.02</span>Works</h2>
+        <div className="count">04</div>
+      </div>
+      <Works />
+
+      <div id="sec-timeline" className="section-head" style={{marginTop:64}}>
+        <h2><span className="sub">CH.03</span>Timeline</h2>
+        <div className="count">2014 — NOW</div>
+      </div>
+      <Timeline />
+
+      <footer id="sec-contact" className="foot-panel">
+        <div className="links">
+          <a href="#">Twitter/X</a>
+          <a href="#">GitHub</a>
+          <a href="#">Mail</a>
+          <a href="#">RSS</a>
+        </div>
+        <div className="copy">© 2026 komawari.</div>
+      </footer>
+
+      <Modal post={open} onClose={()=>setOpen(null)} />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
