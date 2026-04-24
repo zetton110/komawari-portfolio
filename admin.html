@@ -608,7 +608,7 @@ function BlogSection({ toast }) {
         <table className="tbl">
           <thead>
             <tr>
-              <th style={{width:32}}></th><th>ID</th><th>CAT</th><th>DATE</th><th>SIZE</th><th>TITLE</th><th>IMG</th><th></th>
+              <th style={{width:32}}></th><th>ID</th><th>CAT</th><th>DATE</th><th>SIZE</th><th>TITLE</th><th></th>
             </tr>
           </thead>
           <tbody>
@@ -620,7 +620,6 @@ function BlogSection({ toast }) {
                 <td style={{fontFamily:'JetBrains Mono',fontSize:11,color:'var(--muted)',whiteSpace:'nowrap'}}>{p.date}</td>
                 <td style={{fontFamily:'JetBrains Mono',fontSize:11,color:'var(--muted)'}}>{p.size}</td>
                 <td style={{maxWidth:280,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.title}</td>
-                <td style={{fontFamily:'JetBrains Mono',fontSize:10,color:p.img?'var(--idea)':'var(--muted)'}}>{p.img?'photo':'—'}</td>
                 <td>
                   <div className="actions">
                     <button className="btn btn-sm" onClick={() => setModal(p)}>編集</button>
