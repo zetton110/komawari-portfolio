@@ -361,7 +361,7 @@ function updateHero(html, hero) {
 // ─────────────────────────────────────────────────────────────────────────────
 // 表示ヘルパー
 // ─────────────────────────────────────────────────────────────────────────────
-const SIZES = ['s-hero', 's-tall', 's-wide', 's-wide-lg', 's-sq', 's-sm'];
+const SIZES = ['s-hero', 's-tall', 's-wide', 's-wide-lg', 's-full', 's-sq', 's-sm'];
 const CATS  = ['idea', 'tech', 'book'];
 const CAT_COL = { idea: col.green, tech: col.cyan, book: col.yellow };
 
