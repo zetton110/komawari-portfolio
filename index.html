@@ -721,6 +721,33 @@
     .filter-bar{padding-bottom:12px;margin-bottom:18px}
     .cat-btn{padding:4px 8px}
     .cat-btn .n{display:none}
+
+    /* Modal close button: 親指の届きやすい下部に固定表示 */
+    .modal-bg{padding:12px 12px 0}
+    .modal{
+      max-height:calc(100vh - 92px);
+      padding:24px 20px 28px;
+    }
+    .modal .close{
+      position:fixed;
+      top:auto;
+      right:50%;
+      bottom:18px;
+      transform:translateX(50%);
+      width:52px;height:52px;
+      display:flex;align-items:center;justify-content:center;
+      background:var(--ink);
+      color:var(--paper);
+      border-radius:999px;
+      font-size:20px;
+      box-shadow:0 4px 16px rgba(0,0,0,.22);
+      z-index:260;
+    }
+    .modal .close:hover,
+    .modal .close:active{
+      color:var(--paper);
+      background:var(--ink-soft);
+    }
   }
 </style>
 </head>
