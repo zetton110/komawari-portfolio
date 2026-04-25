@@ -28,13 +28,17 @@
   .page{
     max-width:1120px;
     margin:0 auto;
-    padding:40px 40px 80px;
+    padding:22px 40px 80px;
   }
 
-  /* ===== Masthead ===== */
+  /* ===== Masthead (sticky) ===== */
   .masthead{
+    position:sticky;
+    top:0;
+    z-index:50;
+    background:var(--paper);
     display:flex;align-items:baseline;justify-content:space-between;gap:20px;
-    padding-bottom:18px;
+    padding:18px 0;
     border-bottom: var(--border) solid var(--ink);
     margin-bottom:40px;
   }
