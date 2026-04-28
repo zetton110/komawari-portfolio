@@ -2,7 +2,7 @@
 'use strict';
 
 /**
- * portfolio-cli.js — index.html のコンテンツ管理CLI
+ * portfolio-cli.js — data.json のコンテンツ管理CLI
  *
  * 使い方:
  *   node portfolio-cli.js                  インタラクティブメニュー
@@ -22,7 +22,6 @@
 const fs     = require('fs');
 const path   = require('path');
 const rl_    = require('readline');
-const vm     = require('vm');
 
 // サポートする画像MIME
 const IMG_MIME = {
@@ -32,6 +31,7 @@ const IMG_MIME = {
 };
 
 const HTML_FILE = path.resolve(__dirname, 'index.html');
+const DATA_FILE = path.resolve(__dirname, 'data.json');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ターミナルカラー
@@ -57,7 +57,7 @@ function hr(char = '─', width = 62) {
 
 function banner() {
   console.log('');
-  console.log(col.bold('  portfolio-cli') + col.dim(' // index.html manager'));
+  console.log(col.bold('  portfolio-cli') + col.dim(' // data.json manager'));
   console.log(hr());
 }
 
@@ -185,90 +185,41 @@ async function askImageFile(rl, existing = '') {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ファイル I/O
+// ファイル I/O — data.json
 // ─────────────────────────────────────────────────────────────────────────────
-function readHTML() {
-  if (!fs.existsSync(HTML_FILE)) {
-    console.error(col.red(`  Error: ${HTML_FILE} が見つかりません`));
+function readData() {
+  if (!fs.existsSync(DATA_FILE)) {
+    console.error(col.red(`  Error: ${DATA_FILE} が見つかりません`));
     process.exit(1);
   }
-  return fs.readFileSync(HTML_FILE, 'utf8');
-}
-
-function writeHTML(html) {
-  fs.writeFileSync(HTML_FILE + '.bak', fs.readFileSync(HTML_FILE));
-  fs.writeFileSync(HTML_FILE, html, 'utf8');
-  console.log(col.dim('  (バックアップ: index.html.bak)'));
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// JS配列の抽出（ブラケットカウント方式）
-// ─────────────────────────────────────────────────────────────────────────────
-function extractJSArray(html, marker, fromPos = 0) {
-  const markerPos = html.indexOf(marker, fromPos);
-  if (markerPos === -1) throw new Error(`マーカーが見つかりません: "${marker}"`);
-
-  const arrStart = html.indexOf('[', markerPos + marker.length);
-  if (arrStart === -1) throw new Error('配列の開始が見つかりません');
-
-  let depth = 0, i = arrStart, inStr = false, strChar = '';
-  while (i < html.length) {
-    const ch = html[i];
-    if (inStr) {
-      if (ch === '\\') { i += 2; continue; }
-      if (ch === strChar) inStr = false;
-    } else {
-      if (ch === '"' || ch === "'") { inStr = true; strChar = ch; }
-      else if (ch === '[') depth++;
-      else if (ch === ']') {
-        depth--;
-        if (depth === 0) {
-          return { raw: html.slice(arrStart, i + 1), startIdx: arrStart, endIdx: i + 1 };
-        }
-      }
-    }
-    i++;
+  try {
+    const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+    // 既定値で穴埋め
+    data.posts        = data.posts        || [];
+    data.works        = data.works        || [];
+    data.hero         = data.hero         || { title: '', lede: '', icon: '', nowItems: [] };
+    data.hero.nowItems= data.hero.nowItems|| [];
+    data.timeline     = data.timeline     || { work: [], edu: [], side: [] };
+    data.catLabel     = data.catLabel     || { idea:'Idea', tech:'Tech', book:'Book', all:'All' };
+    data.footerLinks  = data.footerLinks  || { twitter: '', github: '' };
+    return data;
+  } catch (e) {
+    console.error(col.red(`  data.json の読み込みに失敗: ${e.message}`));
+    process.exit(1);
   }
-  throw new Error('ブラケットが対応していません');
 }
 
-function evalJSValue(code) {
-  const ctx = {};
-  vm.runInNewContext(`__r = ${code}`, ctx);
-  return ctx.__r;
+function writeData(data) {
+  fs.writeFileSync(DATA_FILE + '.bak', fs.readFileSync(DATA_FILE));
+  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2) + '\n', 'utf8');
+  console.log(col.dim('  (バックアップ: data.json.bak)'));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POSTS — Blog記事
 // ─────────────────────────────────────────────────────────────────────────────
-function getPosts(html) {
-  const { raw } = extractJSArray(html, 'const POSTS = ');
-  return evalJSValue(raw);
-}
-
-function serializePost(p) {
-  const tags    = (p.tags || []).map(t => JSON.stringify(t)).join(', ');
-  const imgLine = p.img ? `\n    img: ${JSON.stringify(p.img)},` : '';
-  const bodyField = Array.isArray(p.body)
-    ? `    body: [\n${p.body.map(b => `      ${JSON.stringify(b)}`).join(',\n')}\n    ]`
-    : `    body: ${JSON.stringify(p.body || '')}`;
-  return [
-    `  {`,
-    `    id: ${p.id}, cat: ${JSON.stringify(p.cat)}, size: ${JSON.stringify(p.size)},`,
-    `    title: ${JSON.stringify(p.title)},`,
-    `    date: ${JSON.stringify(p.date)}, read: ${JSON.stringify(p.read)},`,
-    `    tags: [${tags}],`,
-    `    excerpt: ${JSON.stringify(p.excerpt)},${imgLine}`,
-    bodyField,
-    `  }`,
-  ].join('\n');
-}
-
-function updatePosts(html, posts) {
-  const { startIdx, endIdx } = extractJSArray(html, 'const POSTS = ');
-  const serialized = `[\n${posts.map(serializePost).join(',\n')}\n]`;
-  return html.slice(0, startIdx) + serialized + html.slice(endIdx);
-}
+function getPosts(data) { return data.posts; }
+function setPosts(data, posts) { data.posts = posts; return data; }
 
 function nextPostId(posts) {
   return Math.max(0, ...posts.map(p => p.id)) + 1;
@@ -277,85 +228,30 @@ function nextPostId(posts) {
 // ─────────────────────────────────────────────────────────────────────────────
 // WORKS — 制作物
 // ─────────────────────────────────────────────────────────────────────────────
-function getWorks(html) {
-  const worksPos = html.indexOf('function Works(');
-  if (worksPos === -1) throw new Error('Works関数が見つかりません');
-  const { raw } = extractJSArray(html, 'const items = ', worksPos);
-  return evalJSValue(raw);
-}
-
-function serializeWorks(works) {
-  const rows = works.map(w => {
-    const imgPart  = w.img  ? `, img:${JSON.stringify(w.img)}`   : '';
-    const descPart = w.desc ? `, desc:${JSON.stringify(w.desc)}` : '';
-    const urlPart  = w.url  ? `, url:${JSON.stringify(w.url)}`   : '';
-    return `    { t:${JSON.stringify(w.t)}, y:${JSON.stringify(w.y)}, k:${JSON.stringify(w.k)}${imgPart}${descPart}${urlPart} }`;
-  });
-  return `[\n${rows.join(',\n')}\n  ]`;
-}
-
-function updateWorks(html, works) {
-  const worksPos = html.indexOf('function Works(');
-  if (worksPos === -1) throw new Error('Works関数が見つかりません');
-  const { startIdx, endIdx } = extractJSArray(html, 'const items = ', worksPos);
-  return html.slice(0, startIdx) + serializeWorks(works) + html.slice(endIdx);
-}
+function getWorks(data) { return data.works; }
+function setWorks(data, works) { data.works = works; return data; }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HERO — Topページ
 // ─────────────────────────────────────────────────────────────────────────────
-function getHero(html) {
-  // h1タイトル（</small>直後のテキスト）
-  const h1Match = html.match(/<h1>\s*<small>[^<]*<\/small>\s*([\s\S]*?)\s*<\/h1>/);
-  const title = h1Match ? h1Match[1].trim() : '';
-
-  // 紹介文 (lede)
-  const ledeMatch = html.match(/<p className="lede">\s*([\s\S]*?)\s*<\/p>/);
-  const lede = ledeMatch ? ledeMatch[1].replace(/\s+/g, ' ').trim() : '';
-
-  // NOW items
-  const nowItems = [];
-  const heroNowMatch = html.match(/<div className="hero-now">([\s\S]*?)<\/div>/);
-  if (heroNowMatch) {
-    const nowRe = /<span className="k">([^<]+)<\/span><span>([^<]+)<\/span>/g;
-    let m;
-    while ((m = nowRe.exec(heroNowMatch[1])) !== null) {
-      nowItems.push({ key: m[1], value: m[2] });
-    }
-  }
-
-  return { title, lede, nowItems };
+function getHero(data) {
+  const h = data.hero || {};
+  return {
+    title: h.title || '',
+    lede:  h.lede  || '',
+    nowItems: h.nowItems || [],
+    icon: h.icon || '',
+  };
 }
 
-function updateHero(html, hero) {
-  // h1タイトル更新
-  if (hero.title !== undefined) {
-    html = html.replace(
-      /(<h1>\s*<small>[^<]*<\/small>\s*)([\s\S]*?)(\s*<\/h1>)/,
-      (_, pre, _old, post) => `${pre}${hero.title}${post}`
-    );
-  }
-
-  // 紹介文更新
-  if (hero.lede !== undefined) {
-    html = html.replace(
-      /(<p className="lede">)\s*[\s\S]*?\s*(<\/p>)/,
-      (_, open, close) => `${open}\n          ${hero.lede}\n        ${close}`
-    );
-  }
-
-  // NOW items更新
-  if (hero.nowItems) {
-    hero.nowItems.forEach(item => {
-      const esc = item.key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const re = new RegExp(
-        `(<span className="k">${esc}<\\/span><span>)[^<]*(<\\/span>)`
-      );
-      html = html.replace(re, `$1${item.value}$2`);
-    });
-  }
-
-  return html;
+function setHero(data, hero) {
+  data.hero = {
+    title: hero.title !== undefined ? hero.title : (data.hero && data.hero.title) || '',
+    lede:  hero.lede  !== undefined ? hero.lede  : (data.hero && data.hero.lede)  || '',
+    icon:  hero.icon  !== undefined ? hero.icon  : (data.hero && data.hero.icon)  || '',
+    nowItems: hero.nowItems || (data.hero && data.hero.nowItems) || [],
+  };
+  return data;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -389,7 +285,16 @@ function displayPost(p) {
   console.log(`  ${col.bold('画像')}     : ${imgStatus}`);
   if (p.body && p.body.length > 0) {
     console.log(`  ${col.bold('本文')}     :`);
-    p.body.forEach((b, i) => console.log(col.dim(`    [${i + 1}] ${b}`)));
+    if (Array.isArray(p.body)) {
+      // 旧フォーマット（配列）への後方互換
+      p.body.forEach((b, i) => console.log(col.dim(`    [${i + 1}] ${b}`)));
+    } else {
+      // Markdown 文字列
+      const lines = String(p.body).split('\n');
+      const previewLen = 8;
+      lines.slice(0, previewLen).forEach(line => console.log(col.dim(`    ${line}`)));
+      if (lines.length > previewLen) console.log(col.dim(`    ... (+${lines.length - previewLen} 行)`));
+    }
   }
   console.log(hr());
 }
@@ -421,8 +326,8 @@ function displayHero(hero) {
 // Blog コマンド
 // ─────────────────────────────────────────────────────────────────────────────
 async function cmdBlogList() {
-  const html  = readHTML();
-  const posts = getPosts(html);
+  const data  = readData();
+  const posts = getPosts(data);
   console.log(col.bold(`\n  Blog 記事一覧 (${posts.length}件)`));
   console.log(hr());
   console.log(col.dim('  ID   CAT    DATE         SIZE          TITLE'));
@@ -433,8 +338,8 @@ async function cmdBlogList() {
 
 async function cmdBlogShow(id) {
   if (!id) { console.error(col.red('  ID を指定してください')); return; }
-  const html  = readHTML();
-  const posts = getPosts(html);
+  const data  = readData();
+  const posts = getPosts(data);
   const post  = posts.find(p => p.id === parseInt(id, 10));
   if (!post) { console.error(col.red(`  記事 ID ${id} が見つかりません`)); return; }
   console.log(col.bold(`\n  Blog 記事 詳細`));
@@ -444,8 +349,8 @@ async function cmdBlogShow(id) {
 async function cmdBlogAdd() {
   const rl = createRL();
   try {
-    const html  = readHTML();
-    const posts = getPosts(html);
+    const data  = readData();
+    const posts = getPosts(data);
 
     console.log(col.bold('\n  Blog 記事を追加'));
     console.log(hr());
@@ -476,7 +381,7 @@ async function cmdBlogAdd() {
 
     const ok = await confirm(rl, '  この内容で保存しますか？');
     if (ok) {
-      writeHTML(updatePosts(html, [newPost, ...posts]));
+      writeData(setPosts(data, [newPost, ...posts]));
       console.log(col.green(`  ✓ 記事「${newPost.title}」を追加しました (ID: ${newPost.id})`));
     } else {
       console.log(col.yellow('  キャンセルしました'));
@@ -490,8 +395,8 @@ async function cmdBlogEdit(id) {
   if (!id) { console.error(col.red('  ID を指定してください')); return; }
   const rl = createRL();
   try {
-    const html  = readHTML();
-    const posts = getPosts(html);
+    const data  = readData();
+    const posts = getPosts(data);
     const idx   = posts.findIndex(p => p.id === parseInt(id, 10));
     if (idx === -1) { console.error(col.red(`  記事 ID ${id} が見つかりません`)); return; }
     const ex = posts[idx];
@@ -527,7 +432,7 @@ async function cmdBlogEdit(id) {
     const ok = await confirm(rl, '  この内容で保存しますか？');
     if (ok) {
       posts[idx] = updated;
-      writeHTML(updatePosts(html, posts));
+      writeData(setPosts(data, posts));
       console.log(col.green(`  ✓ 記事「${updated.title}」を更新しました`));
     } else {
       console.log(col.yellow('  キャンセルしました'));
@@ -541,8 +446,8 @@ async function cmdBlogDelete(id) {
   if (!id) { console.error(col.red('  ID を指定してください')); return; }
   const rl = createRL();
   try {
-    const html  = readHTML();
-    const posts = getPosts(html);
+    const data  = readData();
+    const posts = getPosts(data);
     const idx   = posts.findIndex(p => p.id === parseInt(id, 10));
     if (idx === -1) { console.error(col.red(`  記事 ID ${id} が見つかりません`)); return; }
 
@@ -550,7 +455,7 @@ async function cmdBlogDelete(id) {
     const ok = await confirm(rl, col.red('  この記事を削除しますか？'));
     if (ok) {
       const [removed] = posts.splice(idx, 1);
-      writeHTML(updatePosts(html, posts));
+      writeData(setPosts(data, posts));
       console.log(col.green(`  ✓ 記事「${removed.title}」を削除しました`));
     } else {
       console.log(col.yellow('  キャンセルしました'));
@@ -564,8 +469,8 @@ async function cmdBlogDelete(id) {
 // Works コマンド
 // ─────────────────────────────────────────────────────────────────────────────
 async function cmdWorksList() {
-  const html  = readHTML();
-  const works = getWorks(html);
+  const data  = readData();
+  const works = getWorks(data);
   console.log(col.bold(`\n  Works 一覧 (${works.length}件)`));
   console.log(hr());
   works.forEach((w, i) => displayWorkRow(w, i));
@@ -575,8 +480,8 @@ async function cmdWorksList() {
 async function cmdWorksAdd() {
   const rl = createRL();
   try {
-    const html  = readHTML();
-    const works = getWorks(html);
+    const data  = readData();
+    const works = getWorks(data);
 
     console.log(col.bold('\n  Work を追加'));
     console.log(hr());
@@ -597,7 +502,7 @@ async function cmdWorksAdd() {
     const ok = await confirm(rl, '  この内容で保存しますか？');
     if (ok) {
       works.push(newWork);
-      writeHTML(updateWorks(html, works));
+      writeData(setWorks(data, works));
       console.log(col.green(`  ✓ Work「${t}」を追加しました`));
     } else {
       console.log(col.yellow('  キャンセルしました'));
@@ -611,8 +516,8 @@ async function cmdWorksEdit(index) {
   if (!index) { console.error(col.red('  番号を指定してください')); return; }
   const rl = createRL();
   try {
-    const html  = readHTML();
-    const works = getWorks(html);
+    const data  = readData();
+    const works = getWorks(data);
     const idx   = parseInt(index, 10) - 1;
 
     if (idx < 0 || idx >= works.length) {
@@ -642,7 +547,7 @@ async function cmdWorksEdit(index) {
     const ok = await confirm(rl, '  この内容で保存しますか？');
     if (ok) {
       works[idx] = updated;
-      writeHTML(updateWorks(html, works));
+      writeData(setWorks(data, works));
       console.log(col.green(`  ✓ Work「${t}」を更新しました`));
     } else {
       console.log(col.yellow('  キャンセルしました'));
@@ -656,8 +561,8 @@ async function cmdWorksDelete(index) {
   if (!index) { console.error(col.red('  番号を指定してください')); return; }
   const rl = createRL();
   try {
-    const html  = readHTML();
-    const works = getWorks(html);
+    const data  = readData();
+    const works = getWorks(data);
     const idx   = parseInt(index, 10) - 1;
 
     if (idx < 0 || idx >= works.length) {
@@ -669,7 +574,7 @@ async function cmdWorksDelete(index) {
     const ok = await confirm(rl, col.red('  このWorkを削除しますか？'));
     if (ok) {
       const [removed] = works.splice(idx, 1);
-      writeHTML(updateWorks(html, works));
+      writeData(setWorks(data, works));
       console.log(col.green(`  ✓ Work「${removed.t}」を削除しました`));
     } else {
       console.log(col.yellow('  キャンセルしました'));
@@ -683,8 +588,8 @@ async function cmdWorksDelete(index) {
 // Top コマンド
 // ─────────────────────────────────────────────────────────────────────────────
 async function cmdTopShow() {
-  const html = readHTML();
-  const hero = getHero(html);
+  const data = readData();
+  const hero = getHero(data);
   console.log(col.bold('\n  Top ページ'));
   displayHero(hero);
 }
@@ -692,8 +597,8 @@ async function cmdTopShow() {
 async function cmdTopEdit() {
   const rl = createRL();
   try {
-    const html = readHTML();
-    const hero = getHero(html);
+    const data = readData();
+    const hero = getHero(data);
 
     console.log(col.bold('\n  Top ページを編集'));
     displayHero(hero);
@@ -732,7 +637,7 @@ async function cmdTopEdit() {
 
     const ok = await confirm(rl, '  この内容で保存しますか？');
     if (ok) {
-      writeHTML(updateHero(html, updated));
+      writeData(setHero(data, updated));
       console.log(col.green('  ✓ Topページを更新しました'));
     } else {
       console.log(col.yellow('  キャンセルしました'));
@@ -811,7 +716,7 @@ function showHelp() {
   console.log('  node portfolio-cli.js top show              Topページ表示');
   console.log('  node portfolio-cli.js top edit              Topページ編集');
   console.log('');
-  console.log(col.dim('  ※ 保存時に index.html.bak がバックアップとして作成されます。'));
+  console.log(col.dim('  ※ 保存時に data.json.bak がバックアップとして作成されます。'));
   console.log('');
 }
 

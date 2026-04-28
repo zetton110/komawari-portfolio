@@ -12,7 +12,6 @@
 const http = require('http');
 const fs   = require('fs');
 const path = require('path');
-const vm   = require('vm');
 
 let express, WebSocket, multer;
 try {
@@ -28,214 +27,43 @@ try {
 const PORT       = parseInt(process.env.PORT || '3000', 10);
 const ROOT       = __dirname;
 const HTML_FILE  = path.join(ROOT, 'index.html');
+const DATA_FILE  = path.join(ROOT, 'data.json');
 const ADMIN_FILE = path.join(ROOT, 'admin.html');
 const IMAGES_DIR = path.join(ROOT, 'images');
 
 // ─────────────────────────────────────────────────────────────────────────────
-// データパース（CLI と共通ロジック）
+// データ I/O — data.json (CLI と共通ストア)
 // ─────────────────────────────────────────────────────────────────────────────
 const IMG_EXT = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
 
-function extractJSArray(html, marker, fromPos = 0) {
-  const markerPos = html.indexOf(marker, fromPos);
-  if (markerPos === -1) throw new Error(`マーカーが見つかりません: "${marker}"`);
-  const arrStart = html.indexOf('[', markerPos + marker.length);
-  if (arrStart === -1) throw new Error('配列の開始が見つかりません');
-  let depth = 0, i = arrStart, inStr = false, strChar = '';
-  while (i < html.length) {
-    const ch = html[i];
-    if (inStr) {
-      if (ch === '\\') { i += 2; continue; }
-      if (ch === strChar) inStr = false;
-    } else {
-      if (ch === '"' || ch === "'") { inStr = true; strChar = ch; }
-      else if (ch === '[') depth++;
-      else if (ch === ']') {
-        depth--;
-        if (depth === 0) return { raw: html.slice(arrStart, i + 1), startIdx: arrStart, endIdx: i + 1 };
-      }
-    }
-    i++;
+function readData() {
+  if (!fs.existsSync(DATA_FILE)) {
+    throw new Error(`data.json が見つかりません: ${DATA_FILE}`);
   }
-  throw new Error('ブラケットが対応していません');
+  const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+  data.posts        = data.posts        || [];
+  data.works        = data.works        || [];
+  data.hero         = data.hero         || { title: '', lede: '', icon: '', nowItems: [] };
+  data.hero.nowItems= data.hero.nowItems|| [];
+  data.timeline     = data.timeline     || { work: [], edu: [], side: [] };
+  data.timeline.work= data.timeline.work|| [];
+  data.timeline.edu = data.timeline.edu || [];
+  data.timeline.side= data.timeline.side|| [];
+  data.catLabel     = data.catLabel     || { idea:'Idea', tech:'Tech', book:'Book', all:'All' };
+  data.footerLinks  = data.footerLinks  || { twitter: '', github: '' };
+  return data;
 }
 
-function evalJSValue(code) {
-  const ctx = {};
-  vm.runInNewContext(`__r = ${code}`, ctx);
-  return ctx.__r;
-}
-
-// ── Posts ────────────────────────────────────────────────────────────────────
-function getPosts(html) {
-  return evalJSValue(extractJSArray(html, 'const POSTS = ').raw);
-}
-
-function serializePost(p) {
-  const tags    = (p.tags || []).map(t => JSON.stringify(t)).join(', ');
-  const imgLine = p.img ? `\n    img: ${JSON.stringify(p.img)},` : '';
-  // body は文字列（Markdown）または配列（後方互換）
-  const bodyField = Array.isArray(p.body)
-    ? `    body: [\n${p.body.map(b => `      ${JSON.stringify(b)}`).join(',\n')}\n    ]`
-    : `    body: ${JSON.stringify(p.body || '')}`;
-  return [
-    `  {`,
-    `    id: ${p.id}, cat: ${JSON.stringify(p.cat)}, size: ${JSON.stringify(p.size)},`,
-    `    title: ${JSON.stringify(p.title)},`,
-    `    date: ${JSON.stringify(p.date)}, read: ${JSON.stringify(p.read)},`,
-    `    tags: [${tags}],`,
-    `    excerpt: ${JSON.stringify(p.excerpt)},${imgLine}`,
-    bodyField,
-    `  }`,
-  ].join('\n');
-}
-
-function updatePosts(html, posts) {
-  const { startIdx, endIdx } = extractJSArray(html, 'const POSTS = ');
-  return html.slice(0, startIdx) + `[\n${posts.map(serializePost).join(',\n')}\n]` + html.slice(endIdx);
+function writeData(data) {
+  // バックアップは無限に膨らむのを避けるため最新1件のみ
+  if (fs.existsSync(DATA_FILE)) {
+    fs.writeFileSync(DATA_FILE + '.bak', fs.readFileSync(DATA_FILE));
+  }
+  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2) + '\n', 'utf8');
 }
 
 function nextPostId(posts) {
   return Math.max(0, ...posts.map(p => p.id)) + 1;
-}
-
-// ── Works ────────────────────────────────────────────────────────────────────
-function getWorks(html) {
-  const worksPos = html.indexOf('function Works(');
-  if (worksPos === -1) throw new Error('Works関数が見つかりません');
-  return evalJSValue(extractJSArray(html, 'const items = ', worksPos).raw);
-}
-
-function serializeWorks(works) {
-  return `[\n${works.map(w => {
-    const imgPart  = w.img  ? `, img:${JSON.stringify(w.img)}`   : '';
-    const descPart = w.desc ? `, desc:${JSON.stringify(w.desc)}` : '';
-    const urlPart  = w.url  ? `, url:${JSON.stringify(w.url)}`   : '';
-    return `    { t:${JSON.stringify(w.t)}, y:${JSON.stringify(w.y)}, k:${JSON.stringify(w.k)}${imgPart}${descPart}${urlPart} }`;
-  }).join(',\n')}\n  ]`;
-}
-
-function updateWorks(html, works) {
-  const worksPos = html.indexOf('function Works(');
-  if (worksPos === -1) throw new Error('Works関数が見つかりません');
-  const { startIdx, endIdx } = extractJSArray(html, 'const items = ', worksPos);
-  return html.slice(0, startIdx) + serializeWorks(works) + html.slice(endIdx);
-}
-
-// ── Timeline ─────────────────────────────────────────────────────────────────
-function extractJSObject(html, marker, fromPos = 0) {
-  const markerPos = html.indexOf(marker, fromPos);
-  if (markerPos === -1) throw new Error(`マーカーが見つかりません: "${marker}"`);
-  const objStart = html.indexOf('{', markerPos + marker.length);
-  if (objStart === -1) throw new Error('オブジェクトの開始が見つかりません');
-  let depth = 0, i = objStart, inStr = false, strChar = '';
-  while (i < html.length) {
-    const ch = html[i];
-    if (inStr) {
-      if (ch === '\\') { i += 2; continue; }
-      if (ch === strChar) inStr = false;
-    } else {
-      if (ch === '"' || ch === "'") { inStr = true; strChar = ch; }
-      else if (ch === '{') depth++;
-      else if (ch === '}') { depth--; if (depth === 0) return { raw: html.slice(objStart, i + 1), startIdx: objStart, endIdx: i + 1 }; }
-    }
-    i++;
-  }
-  throw new Error('ブレースが対応していません');
-}
-
-function getTimeline(html) {
-  return evalJSValue(extractJSObject(html, 'const TIMELINE = ').raw);
-}
-
-function serializeTimelineItem(item) {
-  const tags = (item.tags || []).map(t => JSON.stringify(t)).join(', ');
-  return [
-    `    {`,
-    `      ep: ${JSON.stringify(item.ep)}, year: ${JSON.stringify(item.year)}, month: ${JSON.stringify(item.month)}, page: ${JSON.stringify(item.page)},`,
-    `      role: ${JSON.stringify(item.role)}, co: ${JSON.stringify(item.co)},`,
-    `      title: ${JSON.stringify(item.title)}, desc: ${JSON.stringify(item.desc)},`,
-    `      tags:[${tags}], icon:${JSON.stringify(item.icon)}`,
-    `    }`,
-  ].join('\n');
-}
-
-function serializeTimeline(tl) {
-  const group = arr => (arr || []).map(serializeTimelineItem).join(',\n');
-  return `{\n  work: [\n${group(tl.work)}\n  ],\n  edu: [\n${group(tl.edu)}\n  ],\n  side: [\n${group(tl.side)}\n  ]\n}`;
-}
-
-function updateTimeline(html, tl) {
-  const { startIdx, endIdx } = extractJSObject(html, 'const TIMELINE = ');
-  return html.slice(0, startIdx) + serializeTimeline(tl) + html.slice(endIdx);
-}
-
-// ── Hero (Top) ───────────────────────────────────────────────────────────────
-function getHero(html) {
-  const h1    = html.match(/<h1>\s*<small>[^<]*<\/small>\s*([\s\S]*?)\s*<\/h1>/);
-  const lede_ = html.match(/<p className="lede">\s*([\s\S]*?)\s*<\/p>/);
-  const now   = html.match(/<div className="hero-now">([\s\S]*?)<\/div>/);
-  const nowItems = [];
-  if (now) {
-    const re = /<span className="k">([^<]+)<\/span><span>([^<]+)<\/span>/g;
-    let m;
-    while ((m = re.exec(now[1])) !== null) nowItems.push({ key: m[1], value: m[2] });
-  }
-  const iconMatch = html.match(/const HERO_ICON = "([^"]*)"/);
-  return {
-    title: h1    ? h1[1].trim() : '',
-    lede:  lede_ ? lede_[1].replace(/\s+/g, ' ').trim() : '',
-    nowItems,
-    icon:  iconMatch ? iconMatch[1] : '',
-  };
-}
-
-function updateHero(html, hero) {
-  if (hero.title !== undefined) {
-    html = html.replace(
-      /(<h1>\s*<small>[^<]*<\/small>\s*)([\s\S]*?)(\s*<\/h1>)/,
-      (_, pre, _o, post) => `${pre}${hero.title}${post}`
-    );
-  }
-  if (hero.lede !== undefined) {
-    html = html.replace(
-      /(<p className="lede">)\s*[\s\S]*?\s*(<\/p>)/,
-      (_, o, c) => `${o}\n          ${hero.lede}\n        ${c}`
-    );
-  }
-  if (hero.nowItems) {
-    hero.nowItems.forEach(item => {
-      const esc = item.key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      // replacer 関数を使うことで item.value 内の $ 記号を安全に扱う
-      html = html.replace(
-        new RegExp(`(<span className="k">${esc}<\\/span><span>)[^<]*(<\\/span>)`),
-        (_, g1, g2) => `${g1}${item.value}${g2}`
-      );
-    });
-  }
-  if (hero.icon !== undefined) {
-    html = html.replace(
-      /const HERO_ICON = "[^"]*"/,
-      `const HERO_ICON = ${JSON.stringify(hero.icon)}`
-    );
-  }
-  return html;
-}
-
-// ── Footer links ─────────────────────────────────────────────────────────────
-function getFooterLinks(html) {
-  return evalJSValue(extractJSObject(html, 'const FOOTER_LINKS = ').raw);
-}
-
-function updateFooterLinks(html, links) {
-  const { startIdx, endIdx } = extractJSObject(html, 'const FOOTER_LINKS = ');
-  const serialized = `{ twitter: ${JSON.stringify(links.twitter || '')}, github: ${JSON.stringify(links.github || '')} }`;
-  return html.slice(0, startIdx) + serialized + html.slice(endIdx);
-}
-
-function writeHTML(html) {
-  fs.writeFileSync(HTML_FILE + '.bak', fs.readFileSync(HTML_FILE));
-  fs.writeFileSync(HTML_FILE, html, 'utf8');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -298,6 +126,19 @@ function startWatcher() {
 }
 startWatcher();
 
+// data.json も監視（CLI 編集時にブラウザを再読み込み）
+function startDataWatcher() {
+  if (!fs.existsSync(DATA_FILE)) { setTimeout(startDataWatcher, 1000); return; }
+  try {
+    const w = fs.watch(DATA_FILE, event => {
+      broadcast();
+      if (event === 'rename') { w.close(); setTimeout(startDataWatcher, 300); }
+    });
+    w.on('error', () => setTimeout(startDataWatcher, 500));
+  } catch(e) { setTimeout(startDataWatcher, 500); }
+}
+startDataWatcher();
+
 // ─────────────────────────────────────────────────────────────────────────────
 // ルーティング
 // ─────────────────────────────────────────────────────────────────────────────
@@ -311,87 +152,87 @@ app.get('/', (_, res) => {
 // 静的ファイル
 app.use('/images', express.static(IMAGES_DIR));
 
+// データJSON（index.html から fetch される）
+app.get('/data.json', (_, res) => {
+  res.type('application/json').sendFile(DATA_FILE);
+});
+
 // 管理画面
 app.get('/admin', (_, res) => res.sendFile(ADMIN_FILE));
 
 // ── API: Posts ───────────────────────────────────────────────────────────────
 app.get('/api/posts', (_, res) => {
-  try { res.json(getPosts(fs.readFileSync(HTML_FILE, 'utf8'))); }
+  try { res.json(readData().posts); }
   catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.post('/api/posts', (req, res) => {
   try {
-    const html  = fs.readFileSync(HTML_FILE, 'utf8');
-    const posts = getPosts(html);
-    const post  = { tags: [], body: [], ...req.body, id: nextPostId(posts) };
+    const data  = readData();
+    const post  = { tags: [], body: '', ...req.body, id: nextPostId(data.posts) };
     if (!post.img) delete post.img;
-    writeHTML(updatePosts(html, [post, ...posts]));
+    data.posts = [post, ...data.posts];
+    writeData(data);
     res.json(post);
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.put('/api/posts/:id', (req, res) => {
   try {
-    const html  = fs.readFileSync(HTML_FILE, 'utf8');
-    const posts = getPosts(html);
-    const idx   = posts.findIndex(p => p.id === parseInt(req.params.id));
+    const data = readData();
+    const idx  = data.posts.findIndex(p => p.id === parseInt(req.params.id));
     if (idx === -1) return res.status(404).json({ error: 'Not found' });
-    posts[idx] = { ...posts[idx], ...req.body, id: posts[idx].id };
-    if (!posts[idx].img) delete posts[idx].img;
-    writeHTML(updatePosts(html, posts));
-    res.json(posts[idx]);
+    data.posts[idx] = { ...data.posts[idx], ...req.body, id: data.posts[idx].id };
+    if (!data.posts[idx].img) delete data.posts[idx].img;
+    writeData(data);
+    res.json(data.posts[idx]);
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.delete('/api/posts/:id', (req, res) => {
   try {
-    const html  = fs.readFileSync(HTML_FILE, 'utf8');
-    const posts = getPosts(html);
-    const idx   = posts.findIndex(p => p.id === parseInt(req.params.id));
+    const data = readData();
+    const idx  = data.posts.findIndex(p => p.id === parseInt(req.params.id));
     if (idx === -1) return res.status(404).json({ error: 'Not found' });
-    posts.splice(idx, 1);
-    writeHTML(updatePosts(html, posts));
+    data.posts.splice(idx, 1);
+    writeData(data);
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 // ── API: Works ───────────────────────────────────────────────────────────────
 app.get('/api/works', (_, res) => {
-  try { res.json(getWorks(fs.readFileSync(HTML_FILE, 'utf8'))); }
+  try { res.json(readData().works); }
   catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.post('/api/works', (req, res) => {
   try {
-    const html  = fs.readFileSync(HTML_FILE, 'utf8');
-    const works = getWorks(html);
-    works.push(req.body);
-    writeHTML(updateWorks(html, works));
+    const data = readData();
+    data.works.push(req.body);
+    writeData(data);
     res.json(req.body);
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.put('/api/works/:index', (req, res) => {
   try {
-    const html  = fs.readFileSync(HTML_FILE, 'utf8');
-    const works = getWorks(html);
-    const idx   = parseInt(req.params.index) - 1;
-    if (idx < 0 || idx >= works.length) return res.status(404).json({ error: 'Not found' });
-    works[idx] = req.body;
-    writeHTML(updateWorks(html, works));
+    const data = readData();
+    const idx  = parseInt(req.params.index) - 1;
+    if (idx < 0 || idx >= data.works.length) return res.status(404).json({ error: 'Not found' });
+    data.works[idx] = req.body;
+    writeData(data);
     res.json(req.body);
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.delete('/api/works/:index', (req, res) => {
   try {
-    const html  = fs.readFileSync(HTML_FILE, 'utf8');
-    const works = getWorks(html);
-    const idx   = parseInt(req.params.index) - 1;
-    if (idx < 0 || idx >= works.length) return res.status(404).json({ error: 'Not found' });
-    works.splice(idx, 1);
-    writeHTML(updateWorks(html, works));
+    const data = readData();
+    const idx  = parseInt(req.params.index) - 1;
+    if (idx < 0 || idx >= data.works.length) return res.status(404).json({ error: 'Not found' });
+    data.works.splice(idx, 1);
+    writeData(data);
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -399,36 +240,52 @@ app.delete('/api/works/:index', (req, res) => {
 // ── API: 並び替え ─────────────────────────────────────────────────────────────
 app.patch('/api/posts/order', (req, res) => {
   try {
-    const html    = fs.readFileSync(HTML_FILE, 'utf8');
-    const posts   = getPosts(html);
+    const data    = readData();
     const { ids } = req.body; // 新しい順のID配列
     if (!Array.isArray(ids)) return res.status(400).json({ error: 'ids must be an array' });
-    const postMap = new Map(posts.map(p => [p.id, p]));
-    const reordered = ids.map(id => postMap.get(id)).filter(Boolean);
-    writeHTML(updatePosts(html, reordered));
+    const postMap   = new Map(data.posts.map(p => [p.id, p]));
+    data.posts      = ids.map(id => postMap.get(id)).filter(Boolean);
+    writeData(data);
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.patch('/api/works/order', (req, res) => {
   try {
-    const html  = fs.readFileSync(HTML_FILE, 'utf8');
     const works = req.body; // 新しい順のWorks配列
     if (!Array.isArray(works)) return res.status(400).json({ error: 'body must be an array' });
-    writeHTML(updateWorks(html, works));
+    const data = readData();
+    data.works = works;
+    writeData(data);
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 // ── API: Top ─────────────────────────────────────────────────────────────────
 app.get('/api/top', (_, res) => {
-  try { res.json(getHero(fs.readFileSync(HTML_FILE, 'utf8'))); }
-  catch(e) { res.status(500).json({ error: e.message }); }
+  try {
+    const h = readData().hero;
+    res.json({
+      title: h.title || '',
+      lede:  h.lede  || '',
+      nowItems: h.nowItems || [],
+      icon:  h.icon  || '',
+    });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.put('/api/top', (req, res) => {
   try {
-    writeHTML(updateHero(fs.readFileSync(HTML_FILE, 'utf8'), req.body));
+    const data = readData();
+    const cur  = data.hero || {};
+    const next = req.body || {};
+    data.hero = {
+      title:    next.title    !== undefined ? next.title    : (cur.title    || ''),
+      lede:     next.lede     !== undefined ? next.lede     : (cur.lede     || ''),
+      icon:     next.icon     !== undefined ? next.icon     : (cur.icon     || ''),
+      nowItems: next.nowItems !== undefined ? next.nowItems : (cur.nowItems || []),
+    };
+    writeData(data);
     res.json({ ok: true });
   } catch(e) {
     console.error('[PUT /api/top] エラー:', e.message);
@@ -438,13 +295,20 @@ app.put('/api/top', (req, res) => {
 
 // ── API: Footer links ────────────────────────────────────────────────────────
 app.get('/api/footer', (_, res) => {
-  try { res.json(getFooterLinks(fs.readFileSync(HTML_FILE, 'utf8'))); }
-  catch(e) { res.status(500).json({ error: e.message }); }
+  try {
+    const f = readData().footerLinks || {};
+    res.json({ twitter: f.twitter || '', github: f.github || '' });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.put('/api/footer', (req, res) => {
   try {
-    writeHTML(updateFooterLinks(fs.readFileSync(HTML_FILE, 'utf8'), req.body));
+    const data = readData();
+    data.footerLinks = {
+      twitter: (req.body && req.body.twitter) || '',
+      github:  (req.body && req.body.github)  || '',
+    };
+    writeData(data);
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -453,7 +317,7 @@ app.put('/api/footer', (req, res) => {
 const TL_GROUPS = ['work', 'edu', 'side'];
 
 app.get('/api/timeline', (_, res) => {
-  try { res.json(getTimeline(fs.readFileSync(HTML_FILE, 'utf8'))); }
+  try { res.json(readData().timeline); }
   catch(e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -461,10 +325,9 @@ app.post('/api/timeline/:group', (req, res) => {
   try {
     const group = req.params.group;
     if (!TL_GROUPS.includes(group)) return res.status(400).json({ error: `Invalid group: ${group}` });
-    const html = fs.readFileSync(HTML_FILE, 'utf8');
-    const tl   = getTimeline(html);
-    tl[group].push(req.body);
-    writeHTML(updateTimeline(html, tl));
+    const data = readData();
+    data.timeline[group].push(req.body);
+    writeData(data);
     res.json(req.body);
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -474,11 +337,10 @@ app.put('/api/timeline/:group/:index', (req, res) => {
     const group = req.params.group;
     const idx   = parseInt(req.params.index) - 1;
     if (!TL_GROUPS.includes(group)) return res.status(400).json({ error: `Invalid group: ${group}` });
-    const html = fs.readFileSync(HTML_FILE, 'utf8');
-    const tl   = getTimeline(html);
-    if (idx < 0 || idx >= tl[group].length) return res.status(404).json({ error: 'Not found' });
-    tl[group][idx] = req.body;
-    writeHTML(updateTimeline(html, tl));
+    const data = readData();
+    if (idx < 0 || idx >= data.timeline[group].length) return res.status(404).json({ error: 'Not found' });
+    data.timeline[group][idx] = req.body;
+    writeData(data);
     res.json(req.body);
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -488,11 +350,10 @@ app.delete('/api/timeline/:group/:index', (req, res) => {
     const group = req.params.group;
     const idx   = parseInt(req.params.index) - 1;
     if (!TL_GROUPS.includes(group)) return res.status(400).json({ error: `Invalid group: ${group}` });
-    const html = fs.readFileSync(HTML_FILE, 'utf8');
-    const tl   = getTimeline(html);
-    if (idx < 0 || idx >= tl[group].length) return res.status(404).json({ error: 'Not found' });
-    tl[group].splice(idx, 1);
-    writeHTML(updateTimeline(html, tl));
+    const data = readData();
+    if (idx < 0 || idx >= data.timeline[group].length) return res.status(404).json({ error: 'Not found' });
+    data.timeline[group].splice(idx, 1);
+    writeData(data);
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });

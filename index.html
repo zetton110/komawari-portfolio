@@ -763,93 +763,14 @@
 <script type="text/babel" data-presets="react">
 const { useState, useEffect, useMemo } = React;
 
-const POSTS = [
-  {
-    id: 4, cat: "idea", size: "s-tall",
-    title: "亀はゼニガメ、小学生はランドセル",
-    date: "2026.04.26", read: "3 min",
-    tags: [],
-    excerpt: "葉桜にうつろいゆく中で出会ったのは爽やかな水色。",
-    img: "./images/IMG_0612_1777191370184.jpg",
-    body: "小学生の朝は早い。  \n\n数週間前は自分より遅く起きていた上の子が、もうリビングにきている。すでに服を着替え終わり、いつでも小学校に行けますけど？と言わんばかりの存在感を放ちながら、真剣な顔で何かを作っている。\n\nリビングの窓からは隣の公民館の桜が若葉をのぞかせており、ことしは花見に行けなかったなぁと考えていると、私の存在に気づいた上の子が手に作品を持って駆け寄ってきた。\n\n「亀、描いたよ」  \n\n渡された絵をみると、なんと亀が立っている。  \n\n「上手だね。」\n\n「うん。ゼニガメだよ。」   \n\n（小学生ともなると、亀が立つ。）\n\n最近、家族でぽこあポケモンをやっており、初めて出会った野良ポケモンがゼニガメだったので印象に残っていたのは知っていた。だが、まさかこんな絵がかけるとは。うまく特徴をとらえているし、色合いも完璧。誰がみてもゼニガメである。素直に感心して、しばらく絵を眺めた。\n    \nゼニガメって爽やかな水色をしてるんだなと思っていると、上の子は窓の外に同じ登校班の子が歩いているのをみつけたようで「そろそろ行かなきゃ」と言いながら、登校初日はうまくつけられなかった名札を器用につけていく。最後にランドセルを背負い、「行ってきます」といって元気に玄関を出ていく後ろ姿は、まるで甲羅を背負っているかのよう。\n\nたどたどしくもたくましい、うちの種ポケモンはどんな進化をとげていくのか。遠くも近くも見える未来へ想いを馳せていると、去り行く春への未練はすっかりと消えていた。"
-  },
-  {
-    id: 3, cat: "book", size: "s-hero",
-    title: "書評:『粉瘤息子都落ち択』更地郊",
-    date: "2026.04.25", read: "5 min",
-    tags: ["book"],
-    excerpt: "第49回すばる文学賞を受賞。スト６をモチーフにした異形の青春小説。",
-    img: "./images/IMG_0617.jpg",
-    body: "## 書評\n安全な択を捨て、リスクのある択をとる。それが格ゲーにおける一つの勝ち筋だが、人生においてはそううまくはいかない。社会の端に追いこまれ太い択を通すしかない主人公 野中と、ビットコインドリームにより人生の安全択を手にしてしまった友人 忍。対照的な2人の会話には格ゲー用語が飛び交い、物語をコミカルに彩る。最終的に野中は都落ちする「択を通す」ことになるのだが、果たして勝ち筋を得たのかは謎である。格ゲーマーらしい表現により都落ち→敗走のネガティブな響きはポジティブに書き換えられ、結果、妙に青春小説然としているのは絶妙にちぐはぐでくだらなく、それもまた愛おしいと思えてしまう。そんな作品である。\n\n日頃から感じているが、格ゲーは人生の縮図かもしれない。というくらい、格ゲーにおける状況判断というのは、人が生きる上で迫られる決断に重なる部分がある。自分から前進し攻撃を仕掛けなければDゲージが溜まらず行動パターンを広げられない。相手の攻めに対して下がってガードばかりしていると画面端に追いやられ手痛いダメージをもらってしまう。どこで無敵をうち状況を好転させるのか。特定の状況限定の最大コンボを走り切ることができるのか。ということを考えていると、人生も同じだなという気になってくる。人生って格ゲーかも？と感じるとつい、格ゲー用語（択、ガー不、キャラ差、コンボ、画面端、起き攻め…など）を生活の中でも使いたくなってくるのである。\n\n私が人知れず感じていたこの感覚を、この小説はとても気持ちよく文学作品に昇華してくれている。格ゲーが好き、スト６が好きな人にはぜひ読んでみてもらいたい。"
-  },
-  {
-    id: 1, cat: "idea", size: "s-hero",
-    title: "コマ割りで考える、情報設計のリズム",
-    date: "2026.04.18", read: "8 min",
-    tags: ["design", "essay"],
-    excerpt: "ウェブのレイアウトを一枚絵ではなく『漫画のページ』として捉え直すと何が起こるか。視線誘導・間・緩急の話。",
-    img: "./images/20260424_eye_catch.png",
-    body: "## なぜか漫画は無限に読める\nなんでどうして漫画というのはこうも読みやすいもんなのか。\n誰との予定も入れず、ただただやりすごすモノクロの日曜日。さすがになにかしなきゃ損かと街へ出かけてはみたものの、急に雨に降られ駆け込んだ見知らぬ古本屋。ゲリラ豪雨が去るまでの宿代のつもりで買った適当な小説に心の底から感動したのがことの始まり。親しい友人をつかまえて、すごい小説をみつけてさぁ・・・と出会いからなにからしっかり語り、前菜副菜もう十分となったもんだから「おまえもぜひ読んでくれ」とすすめたが最後、「いやぁ、どうも昔から活字は苦手でね...」といって逃げられる。そんな無情な人間が、なぜだか漫画を読んで涙を流し、「最終巻まで読んじゃって気づいたら朝だった」なんてまぁ後悔なんて綺麗に置き去りにしたにくい笑顔を向けてくるのはなぜなのか。漫画には人を狂わせる何かがあるらしい。\n## コマの大小と余白が生み出すリズム感\n漫画はなぜ、文学が通用しない人間をこうも惹きつけるのか。ここまでくると、漫画は根本的に他の読み物とは異なると考えるのがよさそうだ。そして考えた末に、漫画は他のよみものと**リズム**が異なると結論づけた。漫画家はコマの大小と余白で読者の視線を誘導する。大ゴマでは時間が止まり、小ゴマの連続では一定のテンポが生まれる。コマの大小と余白により生まれる停止と再生、その繰り返しと揺らぎが生み出すリズムこそ、漫画というフォーマットがもつ特性ではないか。\n## 漫画のように読めるポートフォリオを\nそんな考えで、このポートフォリオが生まれた。漫画のようなデザインだったらダラダラと読み進めてくれるんじゃないか、という仮説検証である。こと実務では、ワイヤー段階でグリッドを壊すには勇気が要る。揃いすぎたレイアウトは読まれず、崩れすぎたレイアウトは疲れる。踏み外す勇気のない私は、業務とは離れた自分の箱庭で試すしかないのである。"
-  },
-  {
-    id: 2, cat: "idea", size: "s-tall",
-    title: "春とおはじき",
-    date: "2026.04.24", read: "3 min",
-    tags: ["essay"],
-    excerpt: "春のおとづれは算数セットのおはじきとともに。",
-    img: "./images/spring_1777193538945.png",
-    body: "いつも春は一瞬でおわると感じていたが、今年は特に存在感が薄い。  \n\n春が悪いわけではなく、我が家に問題がある。というのも、上の子が3月保育園卒業->4月小学校入学コンボを決めたことで、卒園イベントやら入学準備やらで我が家はバタバタ。季節の変わり目を意識する暇などなく、子供を寝かしつけたあといそいそと寝室からリビングへ移動し、来たる小学校入学に向け子供の持ち物にひたすらお名前シールを貼っていく。そんな日々が続いていた。\n\n算数セットは小物が多く、特に大変だ。おはじきは私の知っているおはじきとは形が異なり花びらのような見た目をしている。かわいいなぁと思ったが最後、とにかく名前シールが貼りずらい形状だとわかり絶望する。一つ、二つ、三つ・・・全然終わらない。やっとこさ全てのおはじきに名前シールをつけ終わると、時刻は深夜１時をさしていた。シール奉行をやり遂げた開放感に深夜テンションもあいまって、無性にコンビニへ飲み物を買いに行きたくなり家を出た。\n\n数日前までは肌寒かった夜風が、絶妙な気温に変わっていることに気づく。心地よさを感じつつ車までたどりつくと、ボンネットには無数の桜の花びらがひらり。隣の公民館の桜から風にのって落ちてきたらしい。近くで見ると、桃色のイメージだったそれはほぼ白で、赤の絵の具をほんの一滴垂らしたかな？くらいの控えめな色をしている。一枚指にのせてみると思っていたよりずと大きく、名前シールも簡単に貼れそうだ。桜が散りゆく頃にようやく感じた春のおとずれに、日常の慌ただしさをあらためて実感したのだった。\n"
-  }
-];
-
-const CAT_LABEL = { idea: "Idea", tech: "Tech", book: "Book", all: "All" };
-const HERO_ICON = "";
-const FOOTER_LINKS = { twitter: "https://x.com/itohey_k", github: "https://github.com/zetton110" };
-
-const TIMELINE = {
-  work: [
-    {
-      ep: "01", year: "2014", month: "APR", page: "P.001",
-      role: "System Integrator", co: "Fujitsu Ltd.",
-      title: "はじまりの一歩、Slerとして生きる", desc: "だけん、打鍵はテストのことだけん。チームのものづくりとはなんたるかを知る。",
-      tags:["Web", ".Net", "C#"], icon:"✎"
-    },
-    {
-      ep: "02", year: "2019", month: "DEC", page: "P.014",
-      role: "FA Engineer", co: "Izumo Murata Manufacturing Co., Ltd.",
-      title: "結婚を機にUターンし、FA Engineerへ。新工場の立ち上げをチームリーダーとして牽引。", desc: "システムが止まれば工場も止まる。システムの改善が工場の生産性に直結する。現場力をひたすら鍛えた。",
-      tags:[".Net", "VBNet", "Infra"], icon:"◧"
-    },
-    {
-      ep: "03", year: "2022", month: "ARP / WIP", page: "P.033",
-      role: "Software Developer", co: "Nulab Inc.",
-      title: "自分にとって大切な価値観をより多くの人へ届けたい、SaaS開発の世界へ。", desc: "チームが好き。コラボレーションが好き。そんなシステムを開発できる環境で楽しく必死に学んでます。",
-      tags:["AWS", "Go", "Scala"], icon:"▦"
-    }
-  ],
-  edu: [
-    {
-      ep: "番外01", year: "2010", month: "APR", page: "P.000",
-      role: "Undergrad", co: "Waseda University",
-      title: "社会学と音楽に没頭", desc: "社会学は抽象化の学問。あらゆる事象を分析し境界を見つける力はシステム開発の世界でも生きている。",
-      tags:["Sociology"], icon:"✦"
-    }
-  ],
-  side: [
-    {
-      ep: "特別編01", year: "2024", month: "JUN", page: "P.045",
-      role: "Award", co: "AWS",
-      title: "2024 Japan AWS All Certifications Engineers", desc: "[2024 Japan AWS All Certifications Engineers の発表](https://aws.amazon.com/jp/blogs/psa/2024-japan-aws-all-certifications-engineers/)",
-      tags:["AWS"], icon:"❒"
-    },
-    {
-      ep: "特別編02", year: "2025", month: "JUN", page: "P.060",
-      role: "Award", co: "AWS",
-      title: "2025 Japan All AWS Certifications Engineers", desc: "[2024 Japan AWS All Certifications Engineers の発表](https://aws.amazon.com/jp/blogs/psa/2025-japan-all-aws-certifications-engineers/)",
-      tags:["AWS"], icon:"✿"
-    }
-  ]
-};
+// --- Data (loaded from ./data.json at runtime) ---
+let POSTS         = [];
+let WORKS         = [];
+let CAT_LABEL     = { idea: "Idea", tech: "Tech", book: "Book", all: "All" };
+let HERO          = { title: "", lede: "", icon: "", nowItems: [] };
+let HERO_ICON     = "";
+let FOOTER_LINKS  = { twitter: "", github: "" };
+let TIMELINE      = { work: [], edu: [], side: [] };
 
 function Masthead({ current, goTo }){
   return (
@@ -886,25 +807,25 @@ function LatestStrip({ posts, onOpen, goTo }){
 }
 
 function Hero(){
+  const icon = HERO.icon || HERO_ICON;
   return (
     <section className="hero">
       <div className="hero-intro">
-        {HERO_ICON && <img className="hero-icon" src={HERO_ICON} alt="" />}
+        {icon && <img className="hero-icon" src={icon} alt="" />}
         <h1>
           <small>// INTRO</small>
-          作るひと、書くひと。
+          {HERO.title}
         </h1>
         <p className="lede">
-          エンジニアの koheito のポートフォリオ＆ブログ。完成品を並べるというよりは、試作と思考を置く作業台のような場所です。
+          {HERO.lede}
         </p>
       </div>
       <div className="hero-now">
         <h4>// NOW</h4>
         <ul>
-          <li><span className="k">WORK</span><span>Webサービスの開発・保守</span></li>
-          <li><span className="k">WRITE</span><span>IT、暮らし、小説のことを書きがち</span></li>
-          <li><span className="k">LIFE</span><span>開発、子育て、ギター、スト６（エンジョイ）</span></li>
-          <li><span className="k">BASE</span><span>Shimane / Remote</span></li>
+          {HERO.nowItems.map((it, i) => (
+            <li key={i}><span className="k">{it.key}</span><span>{it.value}</span></li>
+          ))}
         </ul>
       </div>
     </section>
@@ -983,13 +904,7 @@ function BlogGrid({ posts, filtered, onOpen }){
 }
 
 function Works({ onOpen }){
-  const items = [
-    { t:"komawari.", y:"2026", k:"portfolio", img:"./images/komawari.png", desc:"# komawari.\nポートフォリオ 兼　ブログサイト。漫画のコマ割りのような見た目のWebサイト。\n\n# 使用技術\n## ポートフォリオ本体\n- React 18\n- フォント：Zen Kaku Gothic New、JetBrains Mono（Google Fonts）\n- Node.js + Express 5\n- ws（WebSocket）— portfolio.html の変更を検知してブラウザに hot reload 通知" },
-    { t:"agsf", y:"2024", k:"cli", img:"./images/agsf_img.png", desc:"# agsf\nアニメ・ゲーム・特撮（SFX）に登場する楽曲・作品の情報を検索するCLIツール\n# 使用技術\nGo", url:"https://github.com/zetton110/agsfind" },
-    { t:"Slack Link Embedder for Backlog", y:"2024", k:"chrome extention", img:"./images/chrome_extention.png", desc:"# Slack Link Embedder for Backlog\nBacklog の課題やコメントに貼られた Slack メッセージリンクを自動検出し、メッセージ内容をカード形式で埋め込み表示する Chrome 拡張機能。Backlog と Slack を行き来することなく、課題上で直接メッセージの内容を確認できます。\n\n## 技術スタック\n- JavaScript\n- Slack Web API\n- marked.js（Markdown → HTML 変換）\n- DOMPurify（HTML サニタイズ / XSS 対策）\n- chrome.storage.sync（設定値の永続化）", url:"https://github.com/zetton110/slack-embed-for-backlog-chrome-extention" },
-    { t:"saibaiman", y:"2022", k:"electronic work", img:"./images/saibaiman.png", desc:"## saibaiman（栽培マン）\n「植物の観察日記を自動化してやり遂げる」をテーマにしたIoTシステム。土壌水分センサーによる自動水やりと、Webカメラによる定点撮影を行い、結果をチャットツール（Typetalk）へ自動投稿することで、手間なく観察日記を継続できる仕組みを構築。\n## 技術スタック\n- マイコン：Raspberry Pi Model 3B\n- センサー：水分測定センサー付き給水ポンプ、A/DコンバータADS1015（I2C通信）\n- カメラ：Webカメラ（OpenCVで制御）\n- 言語：Python 3\n- 主要ライブラリ：RPi.GPIO、adafruit-circuitpython-ads1x15、OpenCV\n- スケジューリング：cron\n- 中継サーバー：独自REST API + DB（セキュリティ・データ蓄積目的）\n- 外部API：Open-Meteo（天気・気温取得）\n- 通知先：Typetalk、Twitter", url:"https://nulab.com/ja/blog/typetalk/achive-plant-observation-dialy-with-raspi-and-typetalk/" },
-    { t:"Loverage", y:"2019", k:"web service", img:"./images/49273095.png", desc:"# Loverage\n2択の恋愛相談サービス\n（現在はサービス閉鎖済み）\n\n# 使用技術\n## フロントエンド\n- Vue.js 2 — メインのUIフレームワーク\n- Nuxt.js 2 — SSR（サーバーサイドレンダリング）対応版で使用\n- Vuex — 状態管理（vuex-persistedstateでの永続化も実装）\n- Vue Router — クライアントサイドルーティング\n- Express — Node.jsサーバー（SSR時のサーバー兼用）\n- Axios — APIとのHTTP通信\n- SCSS（node-sass / sass-loader） — スタイリング\n- PWA対応（@nuxtjs/pwa / @vue/cli-plugin-pwa）\n- Google Analytics / Google AdSense / Google Tag Manager — アクセス解析・広告\n- Heroku — デプロイ先プラットフォーム（Procfileより）\n\n## バックエンド\n- Elixir — サーバーサイドプログラミング言語\n- Phoenix Framework 1.3 — Elixir製Webフレームワーク\n- PostgreSQL（Ecto + Postgrex） — データベース\n- bcrypt_elixir — パスワードハッシュ化\n- cors_plug — CORS対応\n- Cowboy — HTTPサーバー\n- Timex — 日時処理（日本時刻対応）\n- Heroku — デプロイ先（Procfileより）\n## 管理画面\n- Vue.js — フロントエンドフレームワーク（フロントと同技術）" }
-  ];
+  const items = WORKS;
   return (
     <div className="works">
       {items.map((it,i)=>(
@@ -1200,7 +1115,34 @@ function App(){
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+function bootstrap(data){
+  POSTS        = data.posts        || [];
+  WORKS        = data.works        || [];
+  CAT_LABEL    = data.catLabel     || CAT_LABEL;
+  HERO         = data.hero         || HERO;
+  HERO_ICON    = (data.hero && data.hero.icon) || "";
+  FOOTER_LINKS = data.footerLinks  || FOOTER_LINKS;
+  TIMELINE     = data.timeline     || TIMELINE;
+  ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+}
+
+fetch('./data.json', { cache: 'no-cache' })
+  .then(r => {
+    if (!r.ok) throw new Error('Failed to load data.json: ' + r.status);
+    return r.json();
+  })
+  .then(bootstrap)
+  .catch(err => {
+    console.error(err);
+    const root = document.getElementById('root');
+    if (root) {
+      root.innerHTML =
+        '<div style="padding:40px;font-family:sans-serif;color:#b23a3a">' +
+        'data.json の読み込みに失敗しました。<br>' +
+        '<small style="color:#888">' + (err && err.message ? err.message : String(err)) + '</small>' +
+        '</div>';
+    }
+  });
 </script>
 </body>
 </html>
